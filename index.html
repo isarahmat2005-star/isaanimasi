@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Background Generator</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+        
+        /* Canvas akan menghandle semua visual */
+        canvas { display: block; }
+
+        /* UI Control Panel */
+        #ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+            background: rgba(15, 15, 20, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 100;
+            transition: opacity 0.3s;
+        }
+
+        /* Hide UI saat merekam (opsional, bisa diatur lewat JS) */
+        body.recording #ui-panel { opacity: 0.3; pointer-events: none; }
+
+        h2 { margin: 0 0 5px 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
+        p { margin: 0 0 20px 0; font-size: 12px; color: #888; }
+        
+        label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 6px; display: block; font-weight: bold; }
+        
+        select, button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            outline: none;
+            background: #25252b;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        select:hover, button:hover { border-color: #555; background: #303036; }
+
+        button#btnRecord {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        button#btnRecord.recording {
+            background: #ff3b30;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .status { font-size: 11px; text-align: center; color: #666; margin-top: 5px;}
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="ui-panel">
+        <h2>Background Gen</h2>
+        <p>Alat pembuat aset video loop.</p>
+        
+        <label>Tipe Animasi</label>
+        <select id="styleSelect">
+            <option value="aurora">Soft Aurora (Blur)</option>
+            <option value="bokeh">Floating Bokeh</option>
+            <option value="network">Neural Network</option>
+            <option value="grid">Retro Horizon</option>
+            <option value="waves">Silk Waves</option>
+            <option value="diagonal">Diagonal Flow</option>
+        </select>
+
+        <label>Mood Warna</label>
+        <select id="paletteSelect">
+            <option value="midnight">Midnight Blue (Tech)</option>
+            <option value="sunset">Sunset Purple (Vibe)</option>
+            <option value="nature">Forest Green (Calm)</option>
+            <option value="dark">Charcoal Black (Minimal)</option>
+            <option value="candy">Cotton Candy (Fun)</option>
+        </select>
+
+        <button id="btnRefresh">🔄 Acak Posisi</button>
+        <button id="btnRecord">⏺ Mulai Rekam (.webm)</button>
+        <div class="status" id="statusText">Resolusi mengikuti layar browser</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let animationId;
+        let frameCount = 0;
+
+        // --- KONFIGURASI STATE ---
+        const state = {
+            style: 'aurora',
+            palette: 'midnight',
+            particles: []
+        };
+
+        // --- PALET WARNA (Hex Codes) ---
+        const palettes = {
+            midnight: ['#0f172a', '#1e293b', '#3b82f6', '#6366f1', '#8b5cf6'], // Dark Blue/Purple
+            sunset:   ['#2d0f1f', '#4a1c40', '#db2777', '#f97316', '#fbbf24'], // Pink/Orange
+            nature:   ['#052e16', '#064e3b', '#10b981', '#34d399', '#6ee7b7'], // Greens
+            dark:     ['#000000', '#111111', '#333333', '#555555', '#777777'], // Monochrome
+            candy:    ['#2e1065', '#4c1d95', '#a78bfa', '#f472b6', '#22d3ee']  // Pastel Pop
+        };
+
+        // --- INIT & RESIZE ---
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            initScene();
+        }
+        window.addEventListener('resize', resize);
+
+        // --- INISIALISASI OBJEK BERDASARKAN MODE ---
+        function initScene() {
+            state.particles = [];
+            frameCount = 0;
+            const colors = palettes[state.palette];
+            
+            // Mode 1: Aurora (Bola besar bergerak lambat)
+            if (state.style === 'aurora') {
+                for(let i=0; i<6; i++) {
+                    state.particles.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        vx: (Math.random() - 0.5) * 0.5, // Sangat lambat
+                        vy: (Math.random() - 0.5) * 0.5,
+                        r: Math.min(width, height) / 2, // Radius besar
+                        color: colors[i % colors.length] // Skip warna background (index 0)
+                    });
+                }
+            }
+            // Mode 2: Bokeh (Lingkaran transparan naik ke atas)
+            else if (state.style === 'bokeh') {
+                for(let i=0; i<40; i++) {
+                    state.particles.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height + 100,
+                        vx: Math.sin(Math.random() * Math.PI * 2) * 0.2, // Goyang dikit kiri kanan
+                        vy: -0.2 - Math.random() * 0.5, // Selalu ke atas
+                        r: 20 + Math.random() * 80,
+                        color: colors[2 + Math.floor(Math.random() * (colors.length - 2))],
+                        alpha: 0.1 + Math.random() * 0.3
+                    });
+                }
+            }
+            // Mode 3: Network (Titik dan Garis)
+            else if (state.style === 'network') {
+                for(let i=0; i<70; i++) {
+                    state.particles.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        vx: (Math.random() - 0.5) * 0.8,
+                        vy: (Math.random() - 0.5) * 0.8,
+                        r: 2 + Math.random() * 2,
+                        color: colors[2 + Math.floor(Math.random() * (colors.length - 2))]
+                    });
+                }
+            }
+            // Mode 4, 5, 6: Tidak butuh partikel statis, dihitung di render loop
+        }
+
+        // --- ANIMATION LOOP UTAMA ---
+        function animate() {
+            // Background Clearing
+            // Khusus mode aurora, kita tidak clear total, tapi tumpuk warna untuk blending
+            const colors = palettes[state.palette];
+            
+            // Set Background Color
+            ctx.fillStyle = colors[0];
+            ctx.fillRect(0, 0, width, height);
+
+            frameCount++;
+
+            switch (state.style) {
+                case 'aurora': renderAurora(); break;
+                case 'bokeh': renderBokeh(); break;
+                case 'network': renderNetwork(); break;
+                case 'grid': renderGrid(); break;
+                case 'waves': renderWaves(); break;
+                case 'diagonal': renderDiagonal(); break;
+            }
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // --- RENDER FUNCTIONS (THE MAGIC) ---
+
+        // 1. AURORA (Menggunakan canvas filter blur)
+        function renderAurora() {
+            ctx.save();
+            ctx.filter = 'blur(80px)'; // Kunci efek lembut
+            ctx.globalCompositeOperation = 'screen'; // Blending mode
+            
+            state.particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                // Bounce
+                if(p.x < -200 || p.x > width+200) p.vx *= -1;
+                if(p.y < -200 || p.y > height+200) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            });
+            ctx.restore();
+        }
+
+        // 2. BOKEH (Lingkaran melayang)
+        function renderBokeh() {
+            state.particles.forEach(p => {
+                p.y += p.vy;
+                p.x += Math.sin(frameCount * 0.01 + p.r) * 0.1; // Sedikit goyang
+
+                // Reset jika keluar atas
+                if(p.y < -p.r) {
+                    p.y = height + p.r;
+                    p.x = Math.random() * width;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            });
+        }
+
+        // 3. NETWORK (Titik terhubung)
+        function renderNetwork() {
+            const colors = palettes[state.palette];
+            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = colors[colors.length-1]; // Warna terang untuk garis
+
+            state.particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                // Wrap screen
+                if (p.x < 0) p.x = width; if (p.x > width) p.x = 0;
+                if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
+
+                // Gambar Titik
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+
+                // Cek jarak untuk garis
+                for (let j = index + 1; j < state.particles.length; j++) {
+                    const p2 = state.particles[j];
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.globalAlpha = 1 - (dist / 150);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+                    }
+                }
+            });
+        }
+
+        // 4. GRID (Lantai bergerak)
+        function renderGrid() {
+            const colors = palettes[state.palette];
+            const gridSize = 50;
+            const speed = (frameCount * 1) % gridSize;
+            
+            // Horizon Line
+            const horizon = height * 0.3; // Titik hilang di 30% layar
+            
+            ctx.strokeStyle = colors[2]; // Warna utama
+            ctx.lineWidth = 1;
+
+            // Efek glow
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = colors[2];
+
+            // Garis Horizontal (Lantai berjalan ke bawah)
+            // Kita pakai perspektif palsu sederhana
+            for (let y = height; y > horizon; y -= gridSize * (y/height)) {
+                // Kalkulasi offset agar terlihat bergerak
+                let drawY = y + speed * (y/height); 
+                if (drawY > height) drawY -= (height - horizon);
+
+                ctx.beginPath();
+                ctx.moveTo(0, drawY);
+                ctx.lineTo(width, drawY);
+                ctx.globalAlpha = (drawY - horizon) / (height - horizon); // Pudar di horizon
+                ctx.stroke();
+            }
+
+            // Garis Vertikal (Perspektif)
+            const cx = width / 2;
+            for (let x = -width; x < width * 2; x += gridSize * 2) {
+                ctx.beginPath();
+                ctx.moveTo(cx, horizon); // Semua garis mulai dari tengah horizon
+                ctx.lineTo(x, height);
+                ctx.globalAlpha = 0.3;
+                ctx.stroke();
+            }
+            
+            ctx.shadowBlur = 0; // Reset
+            ctx.globalAlpha = 1;
+
+            // Gradient penutup horizon agar halus
+            const grad = ctx.createLinearGradient(0, horizon - 50, 0, horizon + 50);
+            grad.addColorStop(0, colors[0]);
+            grad.addColorStop(1, "transparent");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, horizon + 100);
+        }
+
+        // 5. WAVES (Gelombang sinus halus)
+        function renderWaves() {
+            const colors = palettes[state.palette];
+            // Kita pakai warna index 1 sampai akhir
+            for (let i = 1; i < colors.length; i++) {
+                ctx.beginPath();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = colors[i];
+                // Layering opacity
+                ctx.globalAlpha = 0.5;
+
+                for (let x = 0; x <= width; x += 5) {
+                    // Rumus gelombang: y = center + amplitude * sin(frequency + speed)
+                    const y = (height / 2) + 
+                              Math.sin(x * 0.005 + frameCount * 0.02 + i) * 50 + 
+                              Math.sin(x * 0.01 + frameCount * 0.01) * 20;
+                    
+                    if (x===0) ctx.moveTo(x, y + (i*20));
+                    else ctx.lineTo(x, y + (i*20));
+                }
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        // 6. DIAGONAL (Garis miring modern)
+        function renderDiagonal() {
+            const colors = palettes[state.palette];
+            const spacing = 60;
+            const speed = (frameCount * 0.5) % spacing;
+
+            ctx.lineWidth = 15;
+            ctx.lineCap = 'round';
+
+            for (let x = -height; x < width; x += spacing) {
+                // Pilih warna acak berdasarkan posisi x (pseudo-random stabil)
+                const colorIdx = Math.abs(Math.floor(x / spacing)) % (colors.length - 1) + 1;
+                ctx.strokeStyle = colors[colorIdx];
+                ctx.globalAlpha = 0.1; // Sangat tipis
+
+                ctx.beginPath();
+                // Garis miring 45 derajat
+                ctx.moveTo(x + speed, height);
+                ctx.lineTo(x + speed + height, 0);
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+
+        // --- EVENT HANDLERS ---
+        document.getElementById('styleSelect').addEventListener('change', (e) => {
+            state.style = e.target.value;
+            initScene();
+        });
+        document.getElementById('paletteSelect').addEventListener('change', (e) => {
+            state.palette = e.target.value;
+            initScene();
+        });
+        document.getElementById('btnRefresh').addEventListener('click', initScene);
+
+        // --- VIDEO RECORDER LOGIC (Sama seperti sebelumnya) ---
+        const btnRecord = document.getElementById('btnRecord');
+        const statusText = document.getElementById('statusText');
+        let mediaRecorder;
+        let chunks = [];
+        let isRecording = false;
+
+        btnRecord.addEventListener('click', () => {
+            if(!isRecording) startRec(); else stopRec();
+        });
+
+        function startRec() {
+            const stream = canvas.captureStream(30); // 30 FPS cukup untuk background
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+            mediaRecorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+            mediaRecorder.onstop = saveVid;
+            mediaRecorder.start();
+            isRecording = true;
+            document.body.classList.add('recording');
+            btnRecord.textContent = "⏹ Stop & Save";
+            btnRecord.classList.add('recording');
+            statusText.textContent = "Sedang Merekam...";
+        }
+
+        function stopRec() {
+            mediaRecorder.stop();
+            isRecording = false;
+            document.body.classList.remove('recording');
+            btnRecord.textContent = "⏺ Mulai Rekam (.webm)";
+            btnRecord.classList.remove('recording');
+            statusText.textContent = "Memproses...";
+        }
+
+        function saveVid() {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `bg-${state.style}-${Date.now()}.webm`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            chunks = [];
+            statusText.textContent = "Tersimpan!";
+        }
+
+        // Start
+        resize();
+        animate();
+
+    </script>
+</body>
+</html>
