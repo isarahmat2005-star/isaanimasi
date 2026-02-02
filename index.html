@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BG GEN PRO v3</title>
+    <title>BG GEN PRO v4</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech&display=swap" rel="stylesheet">
@@ -13,51 +13,53 @@
             margin: 0; 
             overflow: hidden; 
             background: #000; 
-            font-family: 'Share Tech', sans-serif; /* Font Baru */
+            font-family: 'Share Tech', sans-serif; 
         }
         
         canvas { display: block; }
 
-        /* UI Panel - Tech Style */
+        /* UI Panel */
         #ui-panel {
             position: absolute;
             top: 20px;
             left: 20px;
-            width: 280px;
-            background: rgba(10, 10, 10, 0.9);
+            width: 300px;
+            background: rgba(15, 15, 20, 0.95);
             border: 1px solid #444;
             padding: 20px;
             color: #ccc;
-            z-index: 1000; /* Pastikan selalu di atas */
+            z-index: 1000;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* Saat Merekam: Ubah border jadi merah, tapi JANGAN disable pointer events */
+        /* Border Merah saat Merekam */
         body.recording #ui-panel {
             border-color: #ff3333;
-            box-shadow: 0 0 15px rgba(255, 51, 51, 0.3);
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.2);
+        }
+
+        /* Typography: Title Case (Kapital Awal Saja) */
+        h2, label, select, button, .status, .timer-display { 
+            text-transform: capitalize; 
         }
 
         h2 { 
-            margin: 0 0 5px 0; 
-            font-size: 24px; 
+            margin: 0 0 15px 0; 
+            font-size: 22px; 
             color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
             border-bottom: 1px solid #333;
             padding-bottom: 10px;
         }
 
-        p { margin: 10px 0 20px 0; font-size: 14px; color: #888; }
-        
         label { 
             font-size: 14px; 
-            text-transform: uppercase; 
-            color: #555; 
+            color: #888; 
             margin-bottom: 5px; 
             display: block; 
         }
         
-        select, button {
+        select, button, input {
             font-family: 'Share Tech', sans-serif;
             width: 100%;
             padding: 10px;
@@ -66,20 +68,62 @@
             color: #fff;
             font-size: 16px;
             border: 1px solid #333;
+            border-radius: 4px;
             cursor: pointer;
-            text-transform: uppercase;
             transition: 0.2s;
+            box-sizing: border-box; /* Agar padding tidak merusak layout */
         }
 
         select:hover, button:hover { 
-            border-color: #fff; 
+            border-color: #666; 
             background: #252525; 
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        /* Layout Baris untuk Timer (40:60) */
+        .timer-row {
+            display: flex;
+            gap: 10px; /* Jarak antar elemen */
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        /* 40% Lebar untuk Dropdown */
+        .timer-row select {
+            width: 40%;
+            margin-bottom: 0;
+        }
+
+        /* 60% Lebar untuk Display Waktu */
+        .timer-display {
+            width: 60%;
+            background: #000;
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: right;
+            font-size: 20px;
+            color: #4facfe;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        /* Input Custom (Hidden by default) */
+        #customTimeInput {
+            display: none;
+            margin-top: -10px;
+            border-color: #4facfe;
+            color: #4facfe;
         }
 
         /* Tombol Pause */
         button#btnPause {
-            background: #333;
+            background: #2a2a2a;
             color: #ffa500;
+            border-color: #553300;
         }
         button#btnPause.paused {
             background: #ffa500;
@@ -91,23 +135,21 @@
         button#btnRecord {
             background: #111;
             color: #4facfe;
-            border-color: #4facfe;
+            border-color: #1e3a8a;
+            font-weight: bold;
         }
 
-        /* Style saat merekam aktif */
         button#btnRecord.recording {
             background: #ff3333;
             color: #fff;
-            border-color: #ff3333;
+            border-color: #990000;
         }
 
         .status { 
-            font-size: 12px; 
+            font-size: 13px; 
             text-align: center; 
-            color: #555; 
+            color: #666; 
             margin-top: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
@@ -140,6 +182,21 @@
             <option value="dark">Dark Matter</option>
         </select>
 
+        <label>Recording Duration</label>
+        <div class="timer-row">
+            <select id="durationSelect">
+                <option value="manual">Manual</option>
+                <option value="5000">5 Sec</option>
+                <option value="8000">8 Sec</option>
+                <option value="10000">10 Sec</option>
+                <option value="custom">Custom</option>
+            </select>
+
+            <div class="timer-display" id="timerDisplay">00.00</div>
+        </div>
+        
+        <input type="number" id="customTimeInput" placeholder="Enter Seconds (e.g. 15)">
+
         <button id="btnRefresh">Randomize</button>
         <button id="btnPause">Pause Animation</button>
         <button id="btnRecord">Start Recording</button>
@@ -162,10 +219,9 @@
         const state = {
             style: 'aurora',
             palette: 'hacker',
-            objects: [] // Data partikel
+            objects: []
         };
 
-        // --- PALET WARNA (Hex Codes) ---
         const palettes = {
             hacker:   ['#000000', '#001100', '#00ff00', '#33ff33', '#ccffcc'],
             luxury:   ['#0a0a0a', '#1a1a1a', '#d4af37', '#f1c40f', '#fff8dc'],
@@ -175,7 +231,6 @@
             dark:     ['#000000', '#111111', '#444444', '#666666', '#888888']
         };
 
-        // --- INIT & RESIZE ---
         function resize() {
             width = window.innerWidth;
             height = window.innerHeight;
@@ -185,79 +240,39 @@
         }
         window.addEventListener('resize', resize);
 
-        // --- INISIALISASI OBJEK ---
         function initScene() {
             state.objects = [];
             frameCount = 0;
             const colors = palettes[state.palette];
             
-            // 1. Matrix Rain
             if (state.style === 'matrix') {
                 const fontSize = 16;
                 const columns = width / fontSize;
                 for (let x = 0; x < columns; x++) {
-                    state.objects.push({
-                        x: x * fontSize,
-                        y: Math.random() * height, // Posisi acak awal
-                        speed: 2 + Math.random() * 2, // Kecepatan jatuh
-                        char: ''
-                    });
+                    state.objects.push({ x: x * fontSize, y: Math.random() * height, speed: 2 + Math.random() * 2, char: '' });
                 }
             }
-            // 2. Aurora (Blob Blur)
             else if (state.style === 'aurora') {
                 for(let i=0; i<5; i++) {
-                    state.objects.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        vx: (Math.random() - 0.5) * 0.8,
-                        vy: (Math.random() - 0.5) * 0.8,
-                        r: Math.min(width, height) / 2.5,
-                        color: colors[Math.floor(Math.random() * (colors.length-1)) + 1]
-                    });
+                    state.objects.push({ x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, r: Math.min(width, height) / 2.5, color: colors[Math.floor(Math.random() * (colors.length-1)) + 1] });
                 }
             }
-            // 3. Star Warp
             else if (state.style === 'starwarp') {
                 for(let i=0; i<150; i++) {
-                    state.objects.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        z: Math.random() * width // Kedalaman
-                    });
+                    state.objects.push({ x: Math.random() * width, y: Math.random() * height, z: Math.random() * width });
                 }
             }
-            // 4. Hypno Rings
-            else if (state.style === 'rings') {
-                // Tidak butuh objek state, render algoritmik
-            }
-            // 5. Network (Neural)
             else if (state.style === 'network') {
                 for(let i=0; i<60; i++) {
-                    state.objects.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        vx: (Math.random() - 0.5),
-                        vy: (Math.random() - 0.5),
-                        color: colors[2]
-                    });
+                    state.objects.push({ x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - 0.5), vy: (Math.random() - 0.5), color: colors[2] });
                 }
             }
-            // 6. Bokeh
             else if (state.style === 'bokeh') {
                 for(let i=0; i<30; i++) {
-                    state.objects.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height + 50,
-                        vy: -0.5 - Math.random(),
-                        r: 10 + Math.random() * 50,
-                        color: colors[Math.floor(Math.random() * (colors.length-1)) + 1],
-                        alpha: Math.random() * 0.5
-                    });
+                    state.objects.push({ x: Math.random() * width, y: Math.random() * height + 50, vy: -0.5 - Math.random(), r: 10 + Math.random() * 50, color: colors[Math.floor(Math.random() * (colors.length-1)) + 1], alpha: Math.random() * 0.5 });
                 }
             }
             
-            // Pastikan blur dimatikan kecuali mode aurora
             if(state.style === 'aurora') {
                 canvas.style.filter = 'blur(60px)';
                 canvas.style.transform = 'scale(1.1)';
@@ -267,15 +282,12 @@
             }
         }
 
-        // --- ANIMATION LOOP ---
         function animate() {
-            if (isPaused) return; // Hemat baterai jika di-pause
+            if (isPaused) return;
 
             const colors = palettes[state.palette];
-            
-            // Background Clear (Beberapa mode butuh trail)
             if (state.style === 'matrix' || state.style === 'starwarp') {
-                ctx.fillStyle = colors[0] + '33'; // Tambah transparansi untuk efek trail
+                ctx.fillStyle = colors[0] + '33';
                 ctx.fillRect(0, 0, width, height);
             } else {
                 ctx.fillStyle = colors[0];
@@ -294,216 +306,128 @@
                 case 'waves': renderWaves(); break;
                 case 'grid': renderGrid(); break;
             }
-
             animationId = requestAnimationFrame(animate);
         }
 
-        // --- RENDER FUNCTIONS ---
-
+        // --- RENDER FUNCTIONS (Sama seperti sebelumnya) ---
         function renderMatrix() {
             const colors = palettes[state.palette];
             ctx.font = '16px "Share Tech"';
-            ctx.fillStyle = colors[2]; // Warna text utama
-
+            ctx.fillStyle = colors[2];
             state.objects.forEach(drop => {
                 const chars = "01XYZAOBK";
-                const text = chars.charAt(Math.floor(Math.random() * chars.length));
-                
-                ctx.fillText(text, drop.x, drop.y);
-                
+                ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), drop.x, drop.y);
                 drop.y += drop.speed;
-
-                if (drop.y > height && Math.random() > 0.98) {
-                    drop.y = 0;
-                }
+                if (drop.y > height && Math.random() > 0.98) drop.y = 0;
             });
         }
-
         function renderAurora() {
             state.objects.forEach(b => {
                 b.x += b.vx; b.y += b.vy;
                 if(b.x < -b.r || b.x > width + b.r) b.vx *= -1;
                 if(b.y < -b.r || b.y > height + b.r) b.vy *= -1;
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-                ctx.fillStyle = b.color;
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fillStyle = b.color; ctx.fill();
             });
         }
-
         function renderRings() {
-            const colors = palettes[state.palette];
-            ctx.lineWidth = 2;
-            const cx = width / 2;
-            const cy = height / 2;
-            
+            const colors = palettes[state.palette]; ctx.lineWidth = 2; const cx = width / 2; const cy = height / 2;
             for(let i=0; i<15; i++) {
                 const r = (frameCount * 2 + i * 80) % (Math.max(width, height)/1.2);
                 const alpha = 1 - (r / (Math.max(width, height)/1.2));
-                
-                ctx.strokeStyle = colors[2];
-                ctx.globalAlpha = alpha;
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-            ctx.globalAlpha = 1;
+                ctx.strokeStyle = colors[2]; ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+            } ctx.globalAlpha = 1;
         }
-
         function renderStarWarp() {
-            const colors = palettes[state.palette];
-            ctx.fillStyle = colors[colors.length-1]; // Warna paling terang
-
-            const cx = width / 2;
-            const cy = height / 2;
-
+            const colors = palettes[state.palette]; ctx.fillStyle = colors[colors.length-1]; const cx = width/2; const cy = height/2;
             state.objects.forEach(star => {
-                // 3D Perspective Projection
-                star.z -= 5; // Kecepatan gerak ke arah layar
-                if (star.z <= 0) {
-                    star.z = width;
-                    star.x = Math.random() * width;
-                    star.y = Math.random() * height;
-                }
-
-                const sx = (star.x - cx) * (width / star.z) + cx;
-                const sy = (star.y - cy) * (width / star.z) + cy;
-                const size = (1 - star.z / width) * 4;
-
-                ctx.beginPath();
-                ctx.arc(sx, sy, size, 0, Math.PI * 2);
-                ctx.fill();
+                star.z -= 5; if (star.z <= 0) { star.z = width; star.x = Math.random() * width; star.y = Math.random() * height; }
+                const sx = (star.x - cx) * (width / star.z) + cx; const sy = (star.y - cy) * (width / star.z) + cy;
+                const size = (1 - star.z / width) * 4; ctx.beginPath(); ctx.arc(sx, sy, size, 0, Math.PI * 2); ctx.fill();
             });
         }
-
         function renderNetwork() {
-            const colors = palettes[state.palette];
-            ctx.lineWidth = 0.5;
-            ctx.strokeStyle = colors[2];
-
+            const colors = palettes[state.palette]; ctx.lineWidth = 0.5; ctx.strokeStyle = colors[2];
             state.objects.forEach((p, idx) => {
-                p.x += p.vx; p.y += p.vy;
-                if (p.x < 0 || p.x > width) p.vx *= -1;
-                if (p.y < 0 || p.y > height) p.vy *= -1;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
-                ctx.fillStyle = colors[2];
-                ctx.fill();
-
+                p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > width) p.vx *= -1; if (p.y < 0 || p.y > height) p.vy *= -1;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fillStyle = colors[2]; ctx.fill();
                 for (let j = idx + 1; j < state.objects.length; j++) {
-                    const p2 = state.objects[j];
-                    const d = Math.hypot(p.x - p2.x, p.y - p2.y);
-                    if (d < 150) {
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.globalAlpha = 1 - d/150;
-                        ctx.stroke();
-                    }
-                }
-                ctx.globalAlpha = 1;
+                    const p2 = state.objects[j]; const d = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (d < 150) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.globalAlpha = 1 - d/150; ctx.stroke(); }
+                } ctx.globalAlpha = 1;
             });
         }
-
         function renderBokeh() {
             state.objects.forEach(p => {
-                p.y += p.vy;
-                if (p.y < -p.r) { p.y = height + p.r; p.x = Math.random() * width; }
-                
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-                ctx.fillStyle = p.color;
-                ctx.globalAlpha = p.alpha;
-                ctx.fill();
-            });
-            ctx.globalAlpha = 1;
+                p.y += p.vy; if (p.y < -p.r) { p.y = height + p.r; p.x = Math.random() * width; }
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.fill();
+            }); ctx.globalAlpha = 1;
         }
-
         function renderWaves() {
-            const colors = palettes[state.palette];
-            ctx.lineWidth = 2;
+            const colors = palettes[state.palette]; ctx.lineWidth = 2;
             for(let i=1; i<colors.length; i++) {
-                ctx.strokeStyle = colors[i];
-                ctx.beginPath();
-                for(let x=0; x<width; x+=10) {
-                    const y = height/2 + Math.sin(x*0.01 + frameCount*0.02 + i)*50;
-                    if(x===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-                }
+                ctx.strokeStyle = colors[i]; ctx.beginPath();
+                for(let x=0; x<width; x+=10) { const y = height/2 + Math.sin(x*0.01 + frameCount*0.02 + i)*50; if(x===0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
                 ctx.stroke();
             }
         }
-
         function renderGrid() {
-            const colors = palettes[state.palette];
-            const gridSize = 60;
-            const offset = (frameCount * 2) % gridSize;
-            
-            ctx.strokeStyle = colors[2];
-            ctx.lineWidth = 1;
-            
-            // Lantai Perspektif
-            const horizon = height * 0.4;
-            
-            for(let x=-width; x<width*2; x+=gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(width/2, horizon);
-                ctx.lineTo(x, height);
-                ctx.globalAlpha = 0.2;
-                ctx.stroke();
-            }
-            
+            const colors = palettes[state.palette]; const gridSize = 60; const offset = (frameCount * 2) % gridSize;
+            ctx.strokeStyle = colors[2]; ctx.lineWidth = 1; const horizon = height * 0.4;
+            for(let x=-width; x<width*2; x+=gridSize) { ctx.beginPath(); ctx.moveTo(width/2, horizon); ctx.lineTo(x, height); ctx.globalAlpha = 0.2; ctx.stroke(); }
             for(let y=horizon; y<height; y+=gridSize - (y/height)*20) {
-                 const drawY = y + offset * (y/height);
-                 if(drawY > height) continue;
-                 ctx.beginPath();
-                 ctx.moveTo(0, drawY);
-                 ctx.lineTo(width, drawY);
-                 ctx.stroke();
-            }
-            ctx.globalAlpha = 1;
+                 const drawY = y + offset * (y/height); if(drawY > height) continue;
+                 ctx.beginPath(); ctx.moveTo(0, drawY); ctx.lineTo(width, drawY); ctx.stroke();
+            } ctx.globalAlpha = 1;
         }
 
-        // --- CONTROLS & LOGIC ---
+        // --- UI CONTROLS & LOGIC ---
 
         // Pause Logic
         const btnPause = document.getElementById('btnPause');
         btnPause.addEventListener('click', () => {
             isPaused = !isPaused;
             if (isPaused) {
-                btnPause.textContent = "RESUME ANIMATION";
+                btnPause.textContent = "Resume Animation";
                 btnPause.classList.add('paused');
-                document.getElementById('statusText').textContent = "SYSTEM PAUSED";
+                document.getElementById('statusText').textContent = "System Paused";
             } else {
-                btnPause.textContent = "PAUSE ANIMATION";
+                btnPause.textContent = "Pause Animation";
                 btnPause.classList.remove('paused');
-                document.getElementById('statusText').textContent = "SYSTEM RUNNING";
-                animate(); // Restart loop
+                document.getElementById('statusText').textContent = "System Running";
+                animate(); 
             }
         });
 
-        // UI Event Listeners
-        document.getElementById('styleSelect').addEventListener('change', (e) => {
-            state.style = e.target.value;
-            initScene();
-        });
-        document.getElementById('paletteSelect').addEventListener('change', (e) => {
-            state.palette = e.target.value;
-            initScene();
-        });
+        document.getElementById('styleSelect').addEventListener('change', (e) => { state.style = e.target.value; initScene(); });
+        document.getElementById('paletteSelect').addEventListener('change', (e) => { state.palette = e.target.value; initScene(); });
         document.getElementById('btnRefresh').addEventListener('click', initScene);
 
-        // --- VIDEO RECORDER (FIXED) ---
+        // --- LOGIC DURASI & CUSTOM ---
+        const durationSelect = document.getElementById('durationSelect');
+        const customTimeInput = document.getElementById('customTimeInput');
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        durationSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'custom') {
+                customTimeInput.style.display = 'block';
+                customTimeInput.focus();
+            } else {
+                customTimeInput.style.display = 'none';
+            }
+        });
+
+        // --- SYSTEM RECORDING (UPGRADED) ---
         const btnRecord = document.getElementById('btnRecord');
         const statusText = document.getElementById('statusText');
         let mediaRecorder;
         let chunks = [];
         let isRecording = false;
+        let recordingStartTime;
+        let timerInterval;
 
         btnRecord.addEventListener('click', () => {
             if(!isRecording) {
-                // Otomatis unpause jika sedang pause
-                if(isPaused) btnPause.click();
+                if(isPaused) btnPause.click(); // Unpause if needed
                 startRec();
             } else {
                 stopRec();
@@ -511,29 +435,66 @@
         });
 
         function startRec() {
+            // Tentukan target durasi (dalam milidetik)
+            let targetDuration = -1; // -1 artinya manual
+            const val = durationSelect.value;
+            
+            if (val === 'custom') {
+                const secs = parseInt(customTimeInput.value);
+                if (secs && secs > 0) targetDuration = secs * 1000;
+                else targetDuration = -1; // Fallback jika input kosong
+            } else if (val !== 'manual') {
+                targetDuration = parseInt(val);
+            }
+
             const stream = canvas.captureStream(30);
             mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
             mediaRecorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
             mediaRecorder.onstop = saveVid;
             mediaRecorder.start();
-            isRecording = true;
             
-            // UI Update - Tanpa mematikan interaksi
+            isRecording = true;
+            recordingStartTime = Date.now();
+            
+            // Start Timer UI & Auto-stop logic
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - recordingStartTime;
+                updateTimerUI(elapsed);
+
+                // Cek Auto Stop
+                if (targetDuration > 0 && elapsed >= targetDuration) {
+                    stopRec();
+                }
+            }, 16); // ~60fps update
+
             document.body.classList.add('recording');
-            btnRecord.textContent = "STOP RECORDING";
+            btnRecord.textContent = "Stop Recording";
             btnRecord.classList.add('recording');
-            statusText.textContent = "RECORDING IN PROGRESS...";
+            statusText.textContent = targetDuration > 0 ? "Auto Recording..." : "Manual Recording...";
         }
 
         function stopRec() {
+            if (!isRecording) return;
             mediaRecorder.stop();
             isRecording = false;
+            clearInterval(timerInterval);
             
-            // UI Reset
+            updateTimerUI(0); // Reset display
+
             document.body.classList.remove('recording');
-            btnRecord.textContent = "START RECORDING";
+            btnRecord.textContent = "Start Recording";
             btnRecord.classList.remove('recording');
-            statusText.textContent = "PROCESSING VIDEO...";
+            statusText.textContent = "Processing Video...";
+        }
+
+        function updateTimerUI(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const milliseconds = Math.floor((ms % 1000) / 10); // Ambil 2 digit depan ms
+            
+            const secStr = totalSeconds.toString().padStart(2, '0');
+            const msStr = milliseconds.toString().padStart(2, '0');
+            
+            timerDisplay.textContent = `${secStr}.${msStr}`;
         }
 
         function saveVid() {
@@ -542,15 +503,14 @@
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = `BG_GEN_${state.style.toUpperCase()}_${Date.now()}.webm`;
+            a.download = `BG_GEN_${state.style}_${Date.now()}.webm`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
             chunks = [];
-            statusText.textContent = "SAVED TO DEVICE";
+            statusText.textContent = "Saved To Device";
         }
 
-        // Jalankan
         resize();
         animate();
 
