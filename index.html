@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BG GEN PRO v5</title>
+    <title>BG GEN PRO v6</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech&display=swap" rel="stylesheet">
@@ -12,145 +12,145 @@
         body { 
             margin: 0; 
             overflow: hidden; 
-            background: #000; 
+            background: #050505; 
             font-family: 'Share Tech', sans-serif; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
         
-        canvas { display: block; }
+        canvas { 
+            display: block; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
 
         /* UI Panel */
         #ui-panel {
             position: absolute;
             top: 20px;
             left: 20px;
-            width: 300px;
-            background: rgba(15, 15, 20, 0.95);
+            width: 320px;
+            background: rgba(10, 10, 15, 0.95);
             border: 1px solid #444;
             padding: 20px;
             color: #ccc;
             z-index: 1000;
             border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            transition: border-color 0.3s;
         }
 
         body.recording #ui-panel {
             border-color: #ff3333;
-            box-shadow: 0 0 20px rgba(255, 51, 51, 0.2);
+            box-shadow: 0 0 25px rgba(255, 51, 51, 0.2);
         }
 
-        h2, label, select, button, .status, .timer-display { 
-            text-transform: capitalize; 
+        /* Header dengan Gear Icon */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         h2 { 
-            margin: 0 0 15px 0; 
+            margin: 0; 
             font-size: 22px; 
             color: #fff;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
+            text-transform: capitalize; 
+        }
+
+        /* Tombol Gear */
+        #btnSettings {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.5s, color 0.3s;
+        }
+        #btnSettings:hover { color: #4facfe; transform: rotate(90deg); }
+        #btnSettings svg { width: 24px; height: 24px; fill: currentColor; }
+
+        /* Panel Settings Tersembunyi */
+        #settings-drawer {
+            display: none; /* Default hidden */
+            background: #111;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         label { 
-            font-size: 14px; 
-            color: #888; 
-            margin-bottom: 5px; 
+            font-size: 13px; 
+            color: #666; 
+            margin-bottom: 4px; 
             display: block; 
+            text-transform: capitalize;
+            letter-spacing: 0.5px;
         }
         
         select, button, input {
             font-family: 'Share Tech', sans-serif;
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-bottom: 15px;
             background: #1a1a1a;
-            color: #fff;
+            color: #e0e0e0;
             font-size: 16px;
             border: 1px solid #333;
             border-radius: 4px;
             cursor: pointer;
             transition: 0.2s;
             box-sizing: border-box; 
+            text-transform: capitalize;
         }
 
-        select:hover, button:hover { 
-            border-color: #666; 
-            background: #252525; 
-        }
+        select:hover, button:hover { border-color: #666; background: #252525; }
+        select:focus, input:focus { outline: none; border-color: #4facfe; }
 
-        select:focus, input:focus {
-            outline: none;
-            border-color: #4facfe;
-        }
-
-        /* Layout Baris untuk Timer (50:50) */
+        /* Timer Layout 50:50 */
         .timer-row {
             display: flex;
             gap: 10px;
-            align-items: center;
             margin-bottom: 15px;
         }
-
-        /* Ubah menjadi 50% untuk Select */
-        .timer-row select {
-            width: 50%;
-            margin-bottom: 0;
-        }
-
-        /* Ubah menjadi 50% untuk Display dan Warna Background Abu-abu */
+        .timer-row select { width: 50%; margin-bottom: 0; }
         .timer-display {
             width: 50%;
-            background: #1a1a1a; /* Sama dengan tombol */
+            background: #1a1a1a;
             border: 1px solid #333;
-            padding: 10px;
+            padding: 0 15px;
             text-align: right;
             font-size: 20px;
             color: #4facfe;
             border-radius: 4px;
-            letter-spacing: 1px;
-            box-sizing: border-box;
-            height: 40px; /* Samakan tinggi dengan select */
             display: flex;
             align-items: center;
             justify-content: flex-end;
+            height: 44px; /* Samakan tinggi dengan select */
         }
 
-        #customTimeInput {
-            display: none;
-            margin-top: -10px;
-            border-color: #4facfe;
-            color: #4facfe;
-        }
+        #customTimeInput { display: none; margin-top: -10px; border-color: #4facfe; color: #4facfe; }
 
-        button#btnPause {
-            background: #2a2a2a;
-            color: #ffa500;
-            border-color: #553300;
-        }
-        button#btnPause.paused {
-            background: #ffa500;
-            color: #000;
-            animation: blink 1s infinite;
-        }
+        /* Buttons */
+        button#btnPause { background: #2a2a2a; color: #ffa500; border-color: #553300; }
+        button#btnPause.paused { background: #ffa500; color: #000; animation: blink 1s infinite; }
 
-        button#btnRecord {
-            background: #111;
-            color: #4facfe;
-            border-color: #1e3a8a;
-            font-weight: bold;
-        }
+        button#btnRecord { background: #0f172a; color: #4facfe; border-color: #1e3a8a; font-weight: bold; }
+        button#btnRecord.recording { background: #ff3333; color: #fff; border-color: #990000; }
 
-        button#btnRecord.recording {
-            background: #ff3333;
-            color: #fff;
-            border-color: #990000;
-        }
-
-        .status { 
-            font-size: 13px; 
-            text-align: center; 
-            color: #666; 
-            margin-top: 5px;
-        }
+        .status { font-size: 12px; text-align: center; color: #555; margin-top: 5px; text-transform: uppercase; }
 
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
@@ -158,22 +158,58 @@
 <body>
 
     <div id="ui-panel">
-        <h2>System Control</h2>
+        <div class="header-row">
+            <h2>System Control</h2>
+            <button id="btnSettings" title="Settings">
+                <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+            </button>
+        </div>
+
+        <div id="settings-drawer">
+            <label>Output Resolution</label>
+            <select id="ratioSelect">
+                <option value="screen">Match Screen (Default)</option>
+                <option value="landscape">FHD Landscape (1920x1080)</option>
+                <option value="portrait">Reel Portrait (1080x1920)</option>
+                <option value="square">Post Square (1080x1080)</option>
+            </select>
+
+            <label>Recording Duration</label>
+            <div class="timer-row">
+                <select id="durationSelect">
+                    <option value="manual">Manual</option>
+                    <option value="5000">5 Sec</option>
+                    <option value="10000">10 Sec</option>
+                    <option value="15000">15 Sec</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <div class="timer-display" id="timerDisplay">00.00</div>
+            </div>
+            <input type="number" id="customTimeInput" placeholder="Seconds">
+        </div>
         
+        <label>Motion Type</label>
+        <select id="motionSelect">
+            <option value="flow">Relaxed Flow</option>
+            <option value="linear">Linear Horizontal</option>
+            <option value="orbit">Circular Orbit</option>
+            <option value="turbo">Hyper Speed</option>
+            <option value="chaos">Chaos Jitter</option>
+        </select>
+
         <label>Visual Mode</label>
         <select id="styleSelect">
             <option value="aurora">Soft Aurora</option>
-            <option value="ripples">Rain Ripples (New)</option>
-            <option value="dna">DNA Helix (New)</option>
-            <option value="shooting">Shooting Stars (New)</option>
-            <option value="hex">Hexagon Grid (New)</option>
+            <option value="circuit">Circuit Board (New)</option>
+            <option value="tunnel">Warp Tunnel (New)</option>
+            <option value="dust">Floating Dust (New)</option>
+            <option value="ripples">Rain Ripples</option>
+            <option value="dna">DNA Helix</option>
+            <option value="shooting">Shooting Stars</option>
+            <option value="hex">Hexagon Grid</option>
             <option value="matrix">Digital Rain</option>
             <option value="rings">Hypno Rings</option>
-            <option value="starwarp">Star Warp</option>
             <option value="network">Neural Grid</option>
-            <option value="bokeh">Floating Bokeh</option>
-            <option value="waves">Sine Waves</option>
-            <option value="grid">Retro Floor</option>
         </select>
 
         <label>Color Scheme</label>
@@ -183,29 +219,13 @@
             <option value="vapor">Vaporwave Retro</option>
             <option value="crimson">Crimson Red</option>
             <option value="royal">Royal Gold</option>
-            <option value="luxury">Luxury Gold</option>
             <option value="arctic">Arctic White</option>
             <option value="midnight">Midnight Blue</option>
             <option value="sunset">Sunset Vibes</option>
             <option value="dark">Dark Matter</option>
         </select>
 
-        <label>Recording Duration</label>
-        <div class="timer-row">
-            <select id="durationSelect">
-                <option value="manual">Manual</option>
-                <option value="5000">5 Sec</option>
-                <option value="8000">8 Sec</option>
-                <option value="10000">10 Sec</option>
-                <option value="custom">Custom</option>
-            </select>
-
-            <div class="timer-display" id="timerDisplay">00.00</div>
-        </div>
-        
-        <input type="number" id="customTimeInput" placeholder="Enter Seconds (e.g. 15)">
-
-        <button id="btnRefresh">Randomize</button>
+        <button id="btnRefresh">Randomize System</button>
         <button id="btnPause">Pause Animation</button>
         <button id="btnRecord">Start Recording</button>
         
@@ -223,14 +243,15 @@
         let frameCount = 0;
         let isPaused = false;
 
-        // --- KONFIGURASI STATE ---
+        // --- STATE & CONFIG ---
         const state = {
             style: 'aurora',
+            motion: 'flow',
             palette: 'hacker',
+            ratio: 'screen',
             objects: []
         };
 
-        // --- EXTENDED COLOR PALETTES ---
         const palettes = {
             hacker:   ['#000000', '#001100', '#00ff00', '#33ff33', '#ccffcc'],
             luxury:   ['#0a0a0a', '#1a1a1a', '#d4af37', '#f1c40f', '#fff8dc'],
@@ -238,96 +259,134 @@
             midnight: ['#020617', '#172554', '#3b82f6', '#60a5fa', '#93c5fd'],
             sunset:   ['#2d0f1f', '#4a1c40', '#db2777', '#f97316', '#fbbf24'],
             dark:     ['#000000', '#111111', '#444444', '#666666', '#888888'],
-            // New Palettes
-            cyber:    ['#050014', '#12002e', '#fceE0a', '#00f0ff', '#ff003c'], // Cyberpunk
-            vapor:    ['#181026', '#2b1030', '#ff71ce', '#01cdfe', '#05ffa1'], // Vaporwave
-            crimson:  ['#000000', '#1a0505', '#8a0000', '#ff0000', '#ff4d4d'], // Red Gaming
-            royal:    ['#120024', '#2a0040', '#800080', '#ffd700', '#ffffae']  // Purple Gold
+            cyber:    ['#050014', '#12002e', '#fceE0a', '#00f0ff', '#ff003c'],
+            vapor:    ['#181026', '#2b1030', '#ff71ce', '#01cdfe', '#05ffa1'],
+            crimson:  ['#000000', '#1a0505', '#8a0000', '#ff0000', '#ff4d4d'],
+            royal:    ['#120024', '#2a0040', '#800080', '#ffd700', '#ffffae']
         };
 
+        // --- RESIZING LOGIC ---
         function resize() {
-            width = window.innerWidth;
-            height = window.innerHeight;
+            if (state.ratio === 'screen') {
+                width = window.innerWidth;
+                height = window.innerHeight;
+            } else if (state.ratio === 'landscape') {
+                width = 1920; height = 1080;
+            } else if (state.ratio === 'portrait') {
+                width = 1080; height = 1920;
+            } else if (state.ratio === 'square') {
+                width = 1080; height = 1080;
+            }
+            
+            // Set Canvas Resolution
             canvas.width = width;
             canvas.height = height;
+
+            // CSS Scaling for visibility if not fullscreen
+            if (state.ratio !== 'screen') {
+                const scale = Math.min(window.innerWidth / width, window.innerHeight / height) * 0.9;
+                canvas.style.width = `${width * scale}px`;
+                canvas.style.height = `${height * scale}px`;
+            } else {
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+            }
+
             initScene();
         }
         window.addEventListener('resize', resize);
 
+        // --- MOTION MULTIPLIERS ---
+        function getMotionFactors() {
+            switch(state.motion) {
+                case 'turbo': return { speed: 3.0, jitter: 0.1 };
+                case 'linear': return { speed: 1.0, jitter: 0.0, lockY: true };
+                case 'chaos': return { speed: 2.5, jitter: 0.8 };
+                case 'orbit': return { speed: 1.0, jitter: 0.0, rotational: true };
+                default: return { speed: 0.6, jitter: 0.05 }; // Flow (default)
+            }
+        }
+
+        // --- INIT SCENE ---
         function initScene() {
             state.objects = [];
             frameCount = 0;
             const colors = palettes[state.palette];
+            const m = getMotionFactors();
             
-            // Mode Logic
-            if (state.style === 'matrix') {
-                const fontSize = 16;
-                const columns = width / fontSize;
-                for (let x = 0; x < columns; x++) {
-                    state.objects.push({ x: x * fontSize, y: Math.random() * height, speed: 2 + Math.random() * 2, char: '' });
-                }
-            }
-            else if (state.style === 'aurora') {
-                for(let i=0; i<6; i++) {
-                    state.objects.push({ x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, r: Math.min(width, height) / 2.5, color: colors[Math.floor(Math.random() * (colors.length-1)) + 1] });
-                }
-            }
-            else if (state.style === 'starwarp') {
-                for(let i=0; i<150; i++) {
-                    state.objects.push({ x: Math.random() * width, y: Math.random() * height, z: Math.random() * width });
-                }
-            }
-            else if (state.style === 'network') {
-                for(let i=0; i<60; i++) {
-                    state.objects.push({ x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - 0.5), vy: (Math.random() - 0.5), color: colors[2] });
-                }
-            }
-            else if (state.style === 'bokeh') {
-                for(let i=0; i<30; i++) {
-                    state.objects.push({ x: Math.random() * width, y: Math.random() * height + 50, vy: -0.5 - Math.random(), r: 10 + Math.random() * 50, color: colors[Math.floor(Math.random() * (colors.length-1)) + 1], alpha: Math.random() * 0.5 });
-                }
-            }
-            // --- NEW INITIALIZERS ---
-            else if (state.style === 'ripples') {
-                // Generate random start points for ripples
-                // Objects will be dynamic, but init one to start
-                state.objects.push({ x: Math.random()*width, y: Math.random()*height, r: 0, alpha: 1, color: colors[2] });
-            }
-            else if (state.style === 'dna') {
-                for(let i=0; i<50; i++) {
-                    state.objects.push({ id: i, y: (height/50)*i });
-                }
-            }
-            else if (state.style === 'shooting') {
-                for(let i=0; i<20; i++) {
+            // Common generators
+            const randX = () => Math.random() * width;
+            const randY = () => Math.random() * height;
+            const randColor = () => colors[Math.floor(Math.random()*(colors.length-1))+1];
+
+            if (state.style === 'circuit') {
+                for(let i=0; i<40; i++) {
                     state.objects.push({ 
-                        x: Math.random() * width, 
-                        y: Math.random() * height, 
-                        l: Math.random() * 50 + 20, 
-                        s: Math.random() * 10 + 5 
+                        x: randX(), y: randY(), 
+                        vx: (Math.random() > 0.5 ? 1 : -1) * (Math.random() + 0.5) * m.speed, 
+                        vy: 0,
+                        len: Math.random() * 100 + 50, 
+                        dir: Math.random() > 0.5 ? 'h' : 'v'
                     });
                 }
             }
-            
-            // Blur Logic
+            else if (state.style === 'tunnel') {
+                for(let i=0; i<30; i++) {
+                    state.objects.push({ z: Math.random() * width, angle: Math.random() * Math.PI * 2, color: randColor() });
+                }
+            }
+            else if (state.style === 'dust') {
+                for(let i=0; i<100; i++) {
+                    state.objects.push({ 
+                        x: randX(), y: randY(), 
+                        vx: (Math.random()-0.5)*0.5 * m.speed, 
+                        vy: (Math.random()-0.5)*0.5 * m.speed, 
+                        size: Math.random()*2 
+                    });
+                }
+            }
+            // ... (Existing modes adapted with m.speed)
+            else if (state.style === 'matrix') {
+                const cols = width/16;
+                for(let x=0; x<cols; x++) state.objects.push({ x: x*16, y: randY(), speed: (2+Math.random()*2) * m.speed, char: '' });
+            }
+            else if (state.style === 'aurora') {
+                for(let i=0; i<6; i++) state.objects.push({ x: randX(), y: randY(), vx: (Math.random()-0.5)*m.speed, vy: (Math.random()-0.5)*m.speed, r: Math.min(width,height)/2.5, color: randColor() });
+            }
+            else if (state.style === 'network') {
+                for(let i=0; i<60; i++) state.objects.push({ x: randX(), y: randY(), vx: (Math.random()-0.5)*m.speed, vy: (Math.random()-0.5)*m.speed, color: colors[2] });
+            }
+            else if (state.style === 'shooting') {
+                for(let i=0; i<20; i++) state.objects.push({ x: randX(), y: randY(), l: Math.random()*50+20, s: (Math.random()*10+5)*m.speed });
+            }
+            else if (state.style === 'dna') {
+                for(let i=0; i<50; i++) state.objects.push({ id: i, y: (height/50)*i, offset: Math.random()*Math.PI*2 });
+            }
+            else if (state.style === 'ripples') {
+                // Dynamic
+            }
+
+            // Apply Filters
             if(state.style === 'aurora') {
-                canvas.style.filter = 'blur(60px)';
-                canvas.style.transform = 'scale(1.1)';
+                canvas.style.filter = 'blur(60px) contrast(1.2)';
+            } else if (state.style === 'dust') {
+                canvas.style.filter = 'blur(1px)';
             } else {
                 canvas.style.filter = 'none';
-                canvas.style.transform = 'none';
             }
         }
 
+        // --- ANIMATION LOOP ---
         function animate() {
             if (isPaused) return;
 
             const colors = palettes[state.palette];
+            const m = getMotionFactors();
             
-            // Background Handling
-            let trail = '00'; // Default no trail
-            if (['matrix', 'starwarp', 'shooting'].includes(state.style)) trail = '33';
-            if (state.style === 'ripples') trail = '11'; // More trail for ripples
+            // Trail Logic
+            let trail = '00'; 
+            if (['matrix', 'shooting', 'tunnel', 'circuit'].includes(state.style)) trail = '22';
+            if (state.style === 'ripples') trail = '11';
 
             ctx.fillStyle = colors[0] + (trail !== '00' ? trail : '');
             ctx.fillRect(0, 0, width, height);
@@ -335,279 +394,251 @@
             frameCount++;
 
             switch (state.style) {
-                case 'aurora': renderAurora(); break;
-                case 'matrix': renderMatrix(); break;
-                case 'rings': renderRings(); break;
-                case 'starwarp': renderStarWarp(); break;
-                case 'network': renderNetwork(); break;
-                case 'bokeh': renderBokeh(); break;
-                case 'waves': renderWaves(); break;
-                case 'grid': renderGrid(); break;
-                // New Modes
-                case 'ripples': renderRipples(); break;
-                case 'dna': renderDNA(); break;
-                case 'shooting': renderShooting(); break;
-                case 'hex': renderHex(); break;
+                case 'circuit': renderCircuit(colors, m); break;
+                case 'tunnel': renderTunnel(colors, m); break;
+                case 'dust': renderDust(colors, m); break;
+                case 'aurora': renderAurora(m); break;
+                case 'matrix': renderMatrix(colors, m); break;
+                case 'rings': renderRings(colors, m); break;
+                case 'network': renderNetwork(colors, m); break;
+                case 'shooting': renderShooting(colors, m); break;
+                case 'dna': renderDNA(colors, m); break;
+                case 'ripples': renderRipples(colors, m); break;
+                case 'hex': renderHex(colors, m); break;
+                default: break; // Others
             }
             animationId = requestAnimationFrame(animate);
         }
 
-        // --- RENDER FUNCTIONS ---
+        // --- RENDERERS (With Motion Logic) ---
 
-        // 1. Existing Functions
-        function renderMatrix() {
-            const colors = palettes[state.palette];
-            ctx.font = '16px "Share Tech"'; ctx.fillStyle = colors[2];
-            state.objects.forEach(drop => {
-                const chars = "01XYZAOBK"; ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), drop.x, drop.y);
-                drop.y += drop.speed; if (drop.y > height && Math.random() > 0.98) drop.y = 0;
+        function renderCircuit(colors, m) {
+            ctx.lineWidth = 2; ctx.strokeStyle = colors[2];
+            state.objects.forEach(p => {
+                if (m.jitter > 0.5 && Math.random() > 0.95) p.dir = p.dir === 'h' ? 'v' : 'h'; // Chaos
+                
+                if (p.dir === 'h') p.x += p.vx; else p.y += p.vx;
+                
+                // Wrap
+                if (p.x > width) p.x = 0; if (p.x < 0) p.x = width;
+                if (p.y > height) p.y = 0; if (p.y < 0) p.y = height;
+
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                if(p.dir==='h') ctx.lineTo(p.x + p.len, p.y);
+                else ctx.lineTo(p.x, p.y + p.len);
+                ctx.stroke();
+                
+                // Dot at head
+                ctx.fillStyle = colors[3];
+                ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
             });
         }
-        function renderAurora() {
+
+        function renderTunnel(colors, m) {
+            const cx = width/2; const cy = height/2;
+            state.objects.forEach(p => {
+                p.z -= 5 * m.speed;
+                if(p.z <= 0) p.z = width;
+                
+                const s = (width/p.z);
+                const x = cx + Math.cos(p.angle + frameCount*0.01*m.speed) * s * 50;
+                const y = cy + Math.sin(p.angle + frameCount*0.01*m.speed) * s * 50;
+                const size = s * 2;
+                
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI*2); ctx.fill();
+            });
+        }
+
+        function renderDust(colors, m) {
+            ctx.fillStyle = colors[colors.length-1];
+            state.objects.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if(m.rotational) { // Orbit effect
+                   p.x += Math.cos(frameCount*0.01)*0.5;
+                   p.y += Math.sin(frameCount*0.01)*0.5; 
+                }
+                if (p.x < 0) p.x = width; if (p.x > width) p.x = 0;
+                if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
+                
+                ctx.globalAlpha = Math.abs(Math.sin(frameCount * 0.05 + p.x));
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        // Adapted Existing Renderers
+        function renderMatrix(colors, m) {
+            ctx.font = '16px "Share Tech"'; ctx.fillStyle = colors[2];
+            state.objects.forEach(d => {
+                const text = "01XYZAOBK".charAt(Math.floor(Math.random()*9));
+                ctx.fillText(text, d.x, d.y);
+                d.y += d.speed; if(d.y > height) d.y = 0;
+            });
+        }
+
+        function renderAurora(m) {
             state.objects.forEach(b => {
                 b.x += b.vx; b.y += b.vy;
-                if(b.x < -b.r || b.x > width + b.r) b.vx *= -1; if(b.y < -b.r || b.y > height + b.r) b.vy *= -1;
-                ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fillStyle = b.color; ctx.fill();
+                if(m.lockY) b.vy = 0; // Linear mode
+                if(b.x < -b.r || b.x > width+b.r) b.vx *= -1;
+                if(b.y < -b.r || b.y > height+b.r) b.vy *= -1;
+                ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.fill();
             });
         }
-        function renderRings() {
-            const colors = palettes[state.palette]; ctx.lineWidth = 2; const cx = width / 2; const cy = height / 2;
+
+        function renderRings(colors, m) {
+            ctx.lineWidth = 2; const cx = width/2; const cy = height/2;
             for(let i=0; i<15; i++) {
-                const r = (frameCount * 2 + i * 80) % (Math.max(width, height)/1.2);
-                const alpha = 1 - (r / (Math.max(width, height)/1.2));
-                ctx.strokeStyle = colors[2]; ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+                const r = (frameCount * 2 * m.speed + i * 80) % (Math.max(width,height)/1.2);
+                const alpha = 1 - (r / (Math.max(width,height)/1.2));
+                ctx.strokeStyle = colors[2]; ctx.globalAlpha = alpha; 
+                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
             } ctx.globalAlpha = 1;
         }
-        function renderStarWarp() {
-            const colors = palettes[state.palette]; ctx.fillStyle = colors[colors.length-1]; const cx = width/2; const cy = height/2;
-            state.objects.forEach(star => {
-                star.z -= 10; if (star.z <= 0) { star.z = width; star.x = Math.random() * width; star.y = Math.random() * height; }
-                const sx = (star.x - cx) * (width / star.z) + cx; const sy = (star.y - cy) * (width / star.z) + cy;
-                const size = (1 - star.z / width) * 4; ctx.beginPath(); ctx.arc(sx, sy, size, 0, Math.PI * 2); ctx.fill();
-            });
-        }
-        function renderNetwork() {
-            const colors = palettes[state.palette]; ctx.lineWidth = 0.5; ctx.strokeStyle = colors[2];
+
+        function renderNetwork(colors, m) {
+            ctx.lineWidth = 0.5; ctx.strokeStyle = colors[2];
             state.objects.forEach((p, idx) => {
-                p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > width) p.vx *= -1; if (p.y < 0 || p.y > height) p.vy *= -1;
-                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fillStyle = colors[2]; ctx.fill();
+                p.x += p.vx; p.y += p.vy;
+                if(m.lockY) p.vy = 0;
+                if(p.x<0||p.x>width) p.vx*=-1; if(p.y<0||p.y>height) p.vy*=-1;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fillStyle=colors[2]; ctx.fill();
                 for (let j = idx + 1; j < state.objects.length; j++) {
-                    const p2 = state.objects[j]; const d = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    const p2 = state.objects[j];
+                    const d = Math.hypot(p.x - p2.x, p.y - p2.y);
                     if (d < 150) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.globalAlpha = 1 - d/150; ctx.stroke(); }
                 } ctx.globalAlpha = 1;
             });
         }
-        function renderBokeh() {
+
+        function renderShooting(colors, m) {
+            ctx.strokeStyle = colors[colors.length-1]; ctx.lineWidth = 2;
+            state.objects.forEach(s => {
+                s.x -= s.s; s.y += s.s;
+                if (s.x < -100 || s.y > height+100) { s.x = Math.random()*width+200; s.y = -100; }
+                ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x+s.l, s.y-s.l); ctx.stroke();
+            });
+        }
+
+        function renderDNA(colors, m) {
+            const cx = width/2;
             state.objects.forEach(p => {
-                p.y += p.vy; if (p.y < -p.r) { p.y = height + p.r; p.x = Math.random() * width; }
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.fill();
-            }); ctx.globalAlpha = 1;
+                const t = frameCount * 0.05 * m.speed + p.y * 0.01;
+                const x1 = cx + Math.sin(t) * 100;
+                const x2 = cx + Math.sin(t + Math.PI) * 100;
+                ctx.strokeStyle=colors[2]; ctx.globalAlpha=0.2; ctx.beginPath(); ctx.moveTo(x1,p.y); ctx.lineTo(x2,p.y); ctx.stroke();
+                ctx.globalAlpha=1; ctx.fillStyle=colors[3]; ctx.beginPath(); ctx.arc(x1,p.y,4,0,Math.PI*2); ctx.fill();
+                ctx.fillStyle=colors[4]; ctx.beginPath(); ctx.arc(x2,p.y,4,0,Math.PI*2); ctx.fill();
+            });
         }
-        function renderWaves() {
-            const colors = palettes[state.palette]; ctx.lineWidth = 2;
-            for(let i=1; i<colors.length; i++) {
-                ctx.strokeStyle = colors[i]; ctx.beginPath();
-                for(let x=0; x<width; x+=10) { const y = height/2 + Math.sin(x*0.01 + frameCount*0.02 + i)*50; if(x===0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
-                ctx.stroke();
+
+        function renderRipples(colors, m) {
+            ctx.lineWidth = 2;
+            if (frameCount % Math.floor(10/m.speed) === 0) {
+                state.objects.push({ x: Math.random()*width, y: Math.random()*height, r: 0, alpha: 1, color: colors[Math.floor(Math.random()*(colors.length-1))+1] });
             }
-        }
-        function renderGrid() {
-            const colors = palettes[state.palette]; const gridSize = 60; const offset = (frameCount * 2) % gridSize;
-            ctx.strokeStyle = colors[2]; ctx.lineWidth = 1; const horizon = height * 0.4;
-            for(let x=-width; x<width*2; x+=gridSize) { ctx.beginPath(); ctx.moveTo(width/2, horizon); ctx.lineTo(x, height); ctx.globalAlpha = 0.2; ctx.stroke(); }
-            for(let y=horizon; y<height; y+=gridSize - (y/height)*20) {
-                 const drawY = y + offset * (y/height); if(drawY > height) continue;
-                 ctx.beginPath(); ctx.moveTo(0, drawY); ctx.lineTo(width, drawY); ctx.stroke();
+            for(let i = state.objects.length - 1; i >= 0; i--) {
+                const p = state.objects[i]; p.r += 2*m.speed; p.alpha -= 0.01*m.speed;
+                if(p.alpha <= 0) state.objects.splice(i, 1);
+                else { ctx.strokeStyle = p.color; ctx.globalAlpha = p.alpha; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.stroke(); }
             } ctx.globalAlpha = 1;
         }
 
-        // 2. NEW ANIMATION FUNCTIONS
-
-        function renderRipples() {
-            const colors = palettes[state.palette];
-            ctx.lineWidth = 2;
-            
-            // Add new ripple occasionally
-            if (frameCount % 10 === 0) {
-                state.objects.push({ 
-                    x: Math.random()*width, 
-                    y: Math.random()*height, 
-                    r: 0, 
-                    alpha: 1, 
-                    color: colors[Math.floor(Math.random()*(colors.length-1))+1] 
-                });
-            }
-
-            for(let i = state.objects.length - 1; i >= 0; i--) {
-                const p = state.objects[i];
-                p.r += 2;
-                p.alpha -= 0.01;
-                
-                if(p.alpha <= 0) {
-                    state.objects.splice(i, 1);
-                } else {
-                    ctx.strokeStyle = p.color;
-                    ctx.globalAlpha = p.alpha;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-                    ctx.stroke();
-                }
-            }
-            ctx.globalAlpha = 1;
-        }
-
-        function renderDNA() {
-            const colors = palettes[state.palette];
-            const cx = width / 2;
-            
-            state.objects.forEach(p => {
-                const t = frameCount * 0.05 + p.y * 0.01;
-                const x1 = cx + Math.sin(t) * 100;
-                const x2 = cx + Math.sin(t + Math.PI) * 100;
-                
-                // Draw connecting line
-                ctx.strokeStyle = colors[2];
-                ctx.globalAlpha = 0.2;
-                ctx.beginPath(); ctx.moveTo(x1, p.y); ctx.lineTo(x2, p.y); ctx.stroke();
-                
-                // Draw dots
-                ctx.globalAlpha = 1;
-                ctx.fillStyle = colors[3];
-                ctx.beginPath(); ctx.arc(x1, p.y, 4, 0, Math.PI*2); ctx.fill();
-                
-                ctx.fillStyle = colors[4];
-                ctx.beginPath(); ctx.arc(x2, p.y, 4, 0, Math.PI*2); ctx.fill();
-            });
-        }
-
-        function renderShooting() {
-            const colors = palettes[state.palette];
-            ctx.strokeStyle = colors[colors.length-1];
-            ctx.lineWidth = 2;
-            
-            state.objects.forEach(s => {
-                s.x -= s.s;
-                s.y += s.s;
-                
-                // Reset if out of bounds
-                if (s.x < -100 || s.y > height + 100) {
-                    s.x = Math.random() * width + 200;
-                    s.y = -100;
-                }
-                
-                ctx.beginPath();
-                ctx.moveTo(s.x, s.y);
-                ctx.lineTo(s.x + s.l, s.y - s.l);
-                ctx.stroke();
-            });
-        }
-
-        function renderHex() {
-            const colors = palettes[state.palette];
-            const size = 50;
-            const h = size * Math.sqrt(3);
-            const w = size * 2;
-            const dx = w * 0.75;
-            
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = colors[2];
-            
-            for (let x = 0; x < width + size; x += dx) {
-                // Offset row
-                const colIdx = Math.round(x/dx);
-                const yOffset = (colIdx % 2 === 1) ? h/2 : 0;
-                
-                for (let y = -size; y < height + size; y += h) {
-                    const drawY = y + yOffset;
-                    
-                    // Pulsing effect
-                    const dist = Math.hypot(x - width/2, drawY - height/2);
-                    const alpha = (Math.sin(dist * 0.01 - frameCount * 0.05) + 1) / 2 * 0.5;
-                    
+        function renderHex(colors, m) {
+            const size=50; const h=size*Math.sqrt(3); const w=size*2; const dx=w*0.75;
+            ctx.strokeStyle = colors[2]; ctx.lineWidth = 1;
+            for (let x=0; x<width+size; x+=dx) {
+                const colIdx = Math.round(x/dx); const yOffset = (colIdx%2===1) ? h/2 : 0;
+                for (let y=-size; y<height+size; y+=h) {
+                    const drawY = y+yOffset;
+                    const dist = Math.hypot(x-width/2, drawY-height/2);
+                    const alpha = (Math.sin(dist*0.01 - frameCount*0.05*m.speed) + 1)/2 * 0.5;
                     ctx.globalAlpha = Math.max(0.1, alpha);
-                    drawHexagon(x, drawY, size);
+                    ctx.beginPath();
+                    for(let i=0; i<6; i++) {
+                        const ang = Math.PI/3*i;
+                        const hx = x + size*Math.cos(ang); const hy = drawY + size*Math.sin(ang);
+                        if(i===0) ctx.moveTo(hx,hy); else ctx.lineTo(hx,hy);
+                    } ctx.closePath(); ctx.stroke();
                 }
-            }
-            ctx.globalAlpha = 1;
+            } ctx.globalAlpha = 1;
         }
+
+
+        // --- UI & LOGIC ---
+
+        const btnSettings = document.getElementById('btnSettings');
+        const settingsDrawer = document.getElementById('settings-drawer');
         
-        function drawHexagon(x, y, r) {
-            ctx.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const angle = (Math.PI / 3) * i;
-                const hx = x + r * Math.cos(angle);
-                const hy = y + r * Math.sin(angle);
-                if (i === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+        btnSettings.addEventListener('click', () => {
+            if(settingsDrawer.style.display === 'block') {
+                settingsDrawer.style.display = 'none';
+            } else {
+                settingsDrawer.style.display = 'block';
             }
-            ctx.closePath();
-            ctx.stroke();
-        }
+        });
 
+        // Event Listeners
+        document.getElementById('ratioSelect').addEventListener('change', (e) => { state.ratio = e.target.value; resize(); });
+        document.getElementById('motionSelect').addEventListener('change', (e) => { state.motion = e.target.value; initScene(); });
+        document.getElementById('styleSelect').addEventListener('change', (e) => { state.style = e.target.value; initScene(); });
+        document.getElementById('paletteSelect').addEventListener('change', (e) => { state.palette = e.target.value; initScene(); });
 
-        // --- UI CONTROLS & LOGIC ---
+        // Intelligent Randomizer
+        document.getElementById('btnRefresh').addEventListener('click', () => {
+            // Randomize dropdown values
+            const randOpt = (id) => {
+                const sel = document.getElementById(id);
+                const items = sel.options;
+                const randIndex = Math.floor(Math.random() * items.length);
+                sel.selectedIndex = randIndex;
+                return items[randIndex].value;
+            };
+
+            state.motion = randOpt('motionSelect');
+            state.style = randOpt('styleSelect');
+            state.palette = randOpt('paletteSelect');
+            
+            initScene();
+        });
 
         const btnPause = document.getElementById('btnPause');
         btnPause.addEventListener('click', () => {
             isPaused = !isPaused;
-            if (isPaused) {
-                btnPause.textContent = "Resume Animation";
-                btnPause.classList.add('paused');
-                document.getElementById('statusText').textContent = "System Paused";
-            } else {
-                btnPause.textContent = "Pause Animation";
-                btnPause.classList.remove('paused');
-                document.getElementById('statusText').textContent = "System Running";
-                animate(); 
-            }
+            btnPause.classList.toggle('paused');
+            btnPause.textContent = isPaused ? "Resume Animation" : "Pause Animation";
         });
 
-        document.getElementById('styleSelect').addEventListener('change', (e) => { state.style = e.target.value; initScene(); });
-        document.getElementById('paletteSelect').addEventListener('change', (e) => { state.palette = e.target.value; initScene(); });
-        document.getElementById('btnRefresh').addEventListener('click', initScene);
-
-        // --- LOGIC DURASI & CUSTOM ---
+        // --- DURATION & CUSTOM INPUT ---
         const durationSelect = document.getElementById('durationSelect');
         const customTimeInput = document.getElementById('customTimeInput');
-        const timerDisplay = document.getElementById('timerDisplay');
-
         durationSelect.addEventListener('change', (e) => {
-            if (e.target.value === 'custom') {
-                customTimeInput.style.display = 'block';
-                customTimeInput.focus();
-            } else {
-                customTimeInput.style.display = 'none';
-            }
+            customTimeInput.style.display = e.target.value === 'custom' ? 'block' : 'none';
         });
 
-        // --- SYSTEM RECORDING ---
+        // --- RECORDING ---
         const btnRecord = document.getElementById('btnRecord');
         const statusText = document.getElementById('statusText');
-        let mediaRecorder;
-        let chunks = [];
+        const timerDisplay = document.getElementById('timerDisplay');
+        let mediaRecorder, chunks = [], recordingStartTime, timerInterval;
         let isRecording = false;
-        let recordingStartTime;
-        let timerInterval;
 
         btnRecord.addEventListener('click', () => {
             if(!isRecording) {
-                if(isPaused) btnPause.click(); 
+                if(isPaused) btnPause.click();
                 startRec();
-            } else {
-                stopRec();
-            }
+            } else stopRec();
         });
 
         function startRec() {
-            let targetDuration = -1; 
+            let targetDuration = -1;
             const val = durationSelect.value;
-            
             if (val === 'custom') {
                 const secs = parseInt(customTimeInput.value);
-                if (secs && secs > 0) targetDuration = secs * 1000;
-                else targetDuration = -1; 
-            } else if (val !== 'manual') {
-                targetDuration = parseInt(val);
-            }
+                targetDuration = (secs && secs > 0) ? secs * 1000 : -1;
+            } else if (val !== 'manual') targetDuration = parseInt(val);
 
             const stream = canvas.captureStream(30);
             mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
@@ -617,17 +648,16 @@
             
             isRecording = true;
             recordingStartTime = Date.now();
-            
             timerInterval = setInterval(() => {
                 const elapsed = Date.now() - recordingStartTime;
-                updateTimerUI(elapsed);
+                updateTimer(elapsed);
                 if (targetDuration > 0 && elapsed >= targetDuration) stopRec();
-            }, 16); 
+            }, 16);
 
             document.body.classList.add('recording');
             btnRecord.textContent = "Stop Recording";
             btnRecord.classList.add('recording');
-            statusText.textContent = targetDuration > 0 ? "Auto Recording..." : "Manual Recording...";
+            statusText.textContent = "Recording...";
         }
 
         function stopRec() {
@@ -635,19 +665,17 @@
             mediaRecorder.stop();
             isRecording = false;
             clearInterval(timerInterval);
-            updateTimerUI(0);
+            updateTimer(0);
             document.body.classList.remove('recording');
             btnRecord.textContent = "Start Recording";
             btnRecord.classList.remove('recording');
-            statusText.textContent = "Processing Video...";
+            statusText.textContent = "Processing...";
         }
 
-        function updateTimerUI(ms) {
-            const totalSeconds = Math.floor(ms / 1000);
-            const milliseconds = Math.floor((ms % 1000) / 10);
-            const secStr = totalSeconds.toString().padStart(2, '0');
-            const msStr = milliseconds.toString().padStart(2, '0');
-            timerDisplay.textContent = `${secStr}.${msStr}`;
+        function updateTimer(ms) {
+            const sec = Math.floor(ms / 1000).toString().padStart(2,'0');
+            const mili = Math.floor((ms % 1000) / 10).toString().padStart(2,'0');
+            timerDisplay.textContent = `${sec}.${mili}`;
         }
 
         function saveVid() {
@@ -656,17 +684,15 @@
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = `BG_GEN_${state.style}_${Date.now()}.webm`;
+            a.download = `BG_GEN_${state.style}_${state.motion}_${Date.now()}.webm`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
             chunks = [];
-            statusText.textContent = "Saved To Device";
+            statusText.textContent = "Saved!";
         }
 
         resize();
-        animate();
-
     </script>
 </body>
 </html>
