@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BG GEN PRO v7 - Studio (Infinity Core)</title>
+    <title>BG GEN PRO v7 - Studio (Chaos Mode)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech&display=swap" rel="stylesheet">
@@ -212,7 +212,7 @@
             <option value="dark">Dark Matter</option>
         </select>
 
-        <button id="btnRefresh">Randomize Config</button>
+        <button id="btnRefresh">Randomize (Chaos Mode)</button>
 
         <div class="action-row">
             <button id="btnPause">Pause</button>
@@ -231,10 +231,10 @@
         const ctx = canvas.getContext('2d');
         
         const styles = [
-            { id: 'aurora', name: 'Soft Aurora (Infinity)' },
-            { id: 'lava', name: 'Lava Lamp (Infinity)' },
+            { id: 'aurora', name: 'Soft Aurora' },
+            { id: 'lava', name: 'Lava Lamp' },
             { id: 'ripples', name: 'Rain Ripples' },
-            { id: 'nebula', name: 'Nebula Cloud (Infinity)' },
+            { id: 'nebula', name: 'Nebula Cloud' },
             { id: 'matrix', name: 'Digital Rain' },
             { id: 'circuit', name: 'Circuit Breaker' },
             { id: 'audio', name: 'Audio Viz' },
@@ -243,7 +243,7 @@
             { id: 'starwarp', name: 'Star Warp' },
             { id: 'network', name: 'Neural Grid' },
             { id: 'dna', name: 'DNA Helix' },
-            { id: 'bokeh', name: 'Floating Bokeh (Infinity)' },
+            { id: 'bokeh', name: 'Floating Bokeh' },
             { id: 'waves', name: 'Sine Waves' },
             { id: 'rings', name: 'Hypno Rings' },
             { id: 'grid', name: 'Retro Floor' }
@@ -274,12 +274,16 @@
             style: 'aurora',
             bgMode: 'solid',
             palette: 'hacker',
-            objects: []
+            objects: [],
+            // Chaos Parameters
+            densityMod: 1, // Pengali jumlah objek (Tumpukan)
+            speedMod: 1    // Pengali kecepatan (Random Speed)
         };
 
         const styleSelect = document.getElementById('styleSelect');
         const bgModeSelect = document.getElementById('bgModeSelect');
         const ratioSelect = document.getElementById('ratioSelect');
+        const paletteSelect = document.getElementById('paletteSelect');
 
         styles.forEach(s => {
             const opt = document.createElement('option');
@@ -309,65 +313,90 @@
         ratioSelect.addEventListener('change', resize);
         window.addEventListener('resize', () => {});
 
-        // --- INFINITY LOGIC INITIALIZATION ---
-        // Objek diberikan kecepatan konstan (bukan acak segala arah) untuk menciptakan aliran (flow)
+        // --- INIT SCENE DENGAN FAKTOR CHAOS ---
         function initScene() {
             state.objects = [];
             frameCount = 0;
             const colors = palettes[state.palette];
             
+            // Gunakan densityMod untuk "Tumpukan" (Stacking)
+            // Jika densityMod tinggi, loop akan berjalan lebih banyak
+            
             switch (state.style) {
                 case 'aurora': 
-                    // Bergerak ke kiri dengan layer depth
-                    for(let i=0; i<8; i++) state.objects.push({ 
+                    for(let i=0; i < 6 * state.densityMod; i++) state.objects.push({ 
                         x: Math.random()*width, 
                         y: Math.random()*height, 
-                        vx: -0.5 - Math.random(), // Selalu negatif (ke kiri)
+                        vx: (-0.5 - Math.random()) * state.speedMod, 
+                        vy: (Math.random()-0.5) * state.speedMod,
                         r: Math.min(width,height)/2.5, 
                         color: colors[Math.floor(Math.random()*(colors.length-1))+1] 
                     }); break;
+                
                 case 'lava':
-                    // Bergerak ke atas
-                    for(let i=0; i<10; i++) state.objects.push({ 
+                    for(let i=0; i < 8 * state.densityMod; i++) state.objects.push({ 
                         x: Math.random()*width, 
-                        y: Math.random()*height, 
+                        y: height + 100, 
                         r: 50+Math.random()*100, 
-                        s: 0.5 + Math.random(), // Speed ke atas
+                        s: (1+Math.random()*2) * state.speedMod, 
                         color: colors[Math.floor(Math.random()*(colors.length-1))+1] 
                     }); break;
+                
                 case 'nebula':
-                    // Bergerak lambat ke kiri
-                    for(let i=0; i<120; i++) state.objects.push({ 
+                    for(let i=0; i < 100 * state.densityMod; i++) state.objects.push({ 
                         x: Math.random()*width, 
                         y: Math.random()*height, 
-                        r: 2+Math.random()*4, 
+                        r: 2+Math.random()*3, 
                         color: colors[Math.floor(Math.random()*(colors.length-1))+1], 
-                        vx: -0.2 - Math.random()*0.3 
+                        vx: ((Math.random()-0.5)*0.2) * state.speedMod, 
+                        vy: ((Math.random()-0.5)*0.2) * state.speedMod
                     }); break;
+                
                 case 'ripples':
                     state.objects.push({ x:Math.random()*width, y:Math.random()*height, r:0, alpha:1, color:colors[2] }); break;
+                
                 case 'dna':
-                    for(let i=0; i<50; i++) state.objects.push({ id:i, y:(height/50)*i }); break;
+                    for(let i=0; i < 50 * state.densityMod; i++) state.objects.push({ id:i, y:(height/ (50*state.densityMod))*i }); break;
+                
                 case 'bokeh':
-                    // Bubble naik ke atas
-                    for(let i=0; i<40; i++) state.objects.push({ 
-                        x: Math.random()*width, 
-                        y: Math.random()*height, 
-                        vy: -0.5 - Math.random()*1.5, // Naik
-                        r: 10 + Math.random()*60, 
+                    for(let i=0; i < 30 * state.densityMod; i++) state.objects.push({ 
+                        x:Math.random()*width, 
+                        y:Math.random()*height+50, 
+                        vy: (-0.5-Math.random()) * state.speedMod, 
+                        r: 10+Math.random()*50, 
                         color: colors[Math.floor(Math.random()*(colors.length-1))+1], 
                         alpha: Math.random()*0.5 
                     }); break;
+                
                 case 'matrix':
-                    const cols = width/16; for(let x=0; x<cols; x++) state.objects.push({ x:x*16, y:Math.random()*height, speed:2+Math.random()*4, char:'' }); break;
+                    const cols = width/16; 
+                    for(let x=0; x<cols; x++) {
+                        // Matrix density adds more vertical drops
+                        if(Math.random() < state.densityMod) {
+                            state.objects.push({ x:x*16, y:Math.random()*height, speed: (2+Math.random()*4) * state.speedMod, char:'' }); 
+                        }
+                    }
+                    break;
+                
                 case 'shooting':
-                    for(let i=0; i<20; i++) state.objects.push({ x:Math.random()*width, y:Math.random()*height, l:Math.random()*50+20, s:Math.random()*10+10 }); break;
+                    for(let i=0; i < 20 * state.densityMod; i++) state.objects.push({ 
+                        x:Math.random()*width, y:Math.random()*height, l:Math.random()*50+20, s: (10+Math.random()*10) * state.speedMod 
+                    }); break;
+                
                 case 'starwarp':
-                    for(let i=0; i<150; i++) state.objects.push({ x:Math.random()*width, y:Math.random()*height, z:Math.random()*width }); break;
+                    for(let i=0; i < 150 * state.densityMod; i++) state.objects.push({ x:Math.random()*width, y:Math.random()*height, z:Math.random()*width }); break;
+                
                 case 'network':
-                    for(let i=0; i<60; i++) state.objects.push({ x:Math.random()*width, y:Math.random()*height, vx:(Math.random()-0.5)*2, vy:(Math.random()-0.5)*2, color:colors[2] }); break;
+                    for(let i=0; i < 60 * state.densityMod; i++) state.objects.push({ 
+                        x:Math.random()*width, y:Math.random()*height, 
+                        vx: (Math.random()-0.5)*2 * state.speedMod, 
+                        vy: (Math.random()-0.5)*2 * state.speedMod, 
+                        color:colors[2] 
+                    }); break;
+                
                 case 'circuit':
-                    for(let i=0; i<10; i++) state.objects.push({ x: 0, y: Math.random()*height, w: 0, h: 2, color: colors[Math.floor(Math.random()*(colors.length-1))+1] }); break;
+                    for(let i=0; i < 10 * state.densityMod; i++) state.objects.push({ x: 0, y: Math.random()*height, w: 0, h: 2, color: colors[Math.floor(Math.random()*(colors.length-1))+1] }); break;
+                
                 case 'audio':
                     const bars = 64; for(let i=0; i<bars; i++) state.objects.push({ h: Math.random()*height*0.5 }); break;
             }
@@ -410,7 +439,6 @@
             }
             
             ctx.fillRect(0, 0, width, height);
-
             frameCount++;
             
             switch (state.style) {
@@ -434,87 +462,63 @@
             animationId = requestAnimationFrame(animate);
         }
 
-        // --- RENDERERS WITH INFINITY LOGIC ---
-        // Di sini logika "Wrap Around" diterapkan menggantikan "Bounce"
-
-        function renderAurora() { 
-            state.objects.forEach(b => { 
-                b.x += b.vx; 
-                // INFINITY WRAP: Jika lewat kiri, pindah ke kanan
-                if(b.x < -b.r) { 
-                    b.x = width + b.r; 
-                    b.y = Math.random() * height; // Random Y baru agar tidak repetitif
-                }
-                ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fillStyle=b.color;ctx.fill(); 
-            }); 
-        }
-
-        function renderLava() { 
-            state.objects.forEach(b => { 
-                b.y -= b.s; 
-                // INFINITY WRAP: Jika lewat atas, pindah ke bawah
-                if(b.y < -b.r) { 
-                    b.y = height + b.r; 
-                    b.x = Math.random()*width; 
-                    b.s = 0.5 + Math.random(); // Variasi kecepatan baru
-                } 
-                let xOff = Math.sin(frameCount * 0.02 + b.y * 0.01) * 20; 
-                ctx.beginPath(); ctx.arc(b.x + xOff, b.y, b.r, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.fill(); 
-            }); 
-        }
-
-        function renderNebula() { 
-            state.objects.forEach(b => { 
-                b.x += b.vx; 
-                // INFINITY WRAP
-                if(b.x < -b.r*20) { b.x = width + b.r*20; b.y = Math.random() * height; }
-                ctx.beginPath(); ctx.arc(b.x, b.y, b.r*20, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.globalAlpha = 0.05; ctx.fill(); ctx.globalAlpha = 1; 
-            }); 
-        }
-
-        function renderBokeh() { 
-            state.objects.forEach(p=>{
-                p.y += p.vy;
-                // INFINITY WRAP (Vertical)
-                if(p.y < -p.r){
-                    p.y = height + p.r;
-                    p.x = Math.random()*width;
-                }
-                ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.globalAlpha=p.alpha;ctx.fill();
-            });
-            ctx.globalAlpha=1; 
-        }
-
-        // Fungsi Render Lainnya (Matrix, Shooting Stars, Starwarp sudah 'Infinite' secara nature)
+        // --- RENDERERS ---
+        function renderAurora() { state.objects.forEach(b => { b.x+=b.vx; b.y+=b.vy; if(b.x<-b.r){b.x=width+b.r; b.y=Math.random()*height;} ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fillStyle=b.color;ctx.fill(); }); }
+        function renderLava() { state.objects.forEach(b => { b.y -= b.s; if(b.y < -b.r) { b.y = height + b.r; b.x = Math.random()*width; } let xOff = Math.sin(frameCount * 0.02 + b.y * 0.01) * 20; ctx.beginPath(); ctx.arc(b.x + xOff, b.y, b.r, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.fill(); }); }
+        function renderNebula() { state.objects.forEach(b => { b.x+=b.vx; b.y+=b.vy; if(b.x<-b.r*20){b.x=width+b.r*20; b.y=Math.random()*height;} ctx.beginPath(); ctx.arc(b.x, b.y, b.r*20, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.globalAlpha = 0.05; ctx.fill(); ctx.globalAlpha = 1; }); }
         function renderMatrix() { const colors = palettes[state.palette]; ctx.font='16px "Share Tech"'; ctx.fillStyle=colors[2]; state.objects.forEach(d => { ctx.fillText("01XY".charAt(Math.floor(Math.random()*4)), d.x, d.y); d.y+=d.speed; if(d.y>height && Math.random()>0.98) d.y=0; }); }
-        function renderCircuit() { ctx.lineWidth = 3; state.objects.forEach(c => { c.w += 10; ctx.strokeStyle = c.color; ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(c.x + c.w, c.y); ctx.stroke(); if(c.x + c.w > width) { c.x = 0; c.y = Math.random()*height; c.w = 0; } }); }
-        function renderAudio() { const colors = palettes[state.palette]; const barW = width / state.objects.length; state.objects.forEach((b, i) => { let targetH = Math.abs(Math.sin(frameCount*0.05 + i*0.1)) * height * 0.8; b.h += (targetH - b.h) * 0.1; ctx.fillStyle = colors[2]; ctx.fillRect(i * barW, height - b.h, barW - 2, b.h); }); }
-        function renderRipples() { const colors = palettes[state.palette]; ctx.lineWidth=2; if(frameCount%10===0) state.objects.push({x:Math.random()*width,y:Math.random()*height,r:0,alpha:1,color:colors[Math.floor(Math.random()*(colors.length-1))+1]}); for(let i=state.objects.length-1;i>=0;i--){const p=state.objects[i]; p.r+=2; p.alpha-=0.01; if(p.alpha<=0)state.objects.splice(i,1); else { ctx.strokeStyle=p.color;ctx.globalAlpha=p.alpha;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.stroke();}} ctx.globalAlpha=1; }
-        function renderDNA() { const colors = palettes[state.palette]; const cx=width/2; state.objects.forEach(p=>{ const t=frameCount*0.05+p.y*0.01; const x1=cx+Math.sin(t)*100; const x2=cx+Math.sin(t+Math.PI)*100; ctx.strokeStyle=colors[2];ctx.globalAlpha=0.2;ctx.beginPath();ctx.moveTo(x1,p.y);ctx.lineTo(x2,p.y);ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle=colors[3];ctx.beginPath();ctx.arc(x1,p.y,4,0,Math.PI*2);ctx.fill();ctx.fillStyle=colors[4];ctx.beginPath();ctx.arc(x2,p.y,4,0,Math.PI*2);ctx.fill(); }); }
+        function renderCircuit() { ctx.lineWidth = 3; state.objects.forEach(c => { c.w += (10 * state.speedMod); ctx.strokeStyle = c.color; ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(c.x + c.w, c.y); ctx.stroke(); if(c.x + c.w > width) { c.x = 0; c.y = Math.random()*height; c.w = 0; } }); }
+        function renderAudio() { const colors = palettes[state.palette]; const barW = width / state.objects.length; state.objects.forEach((b, i) => { let targetH = Math.abs(Math.sin(frameCount*(0.05*state.speedMod) + i*0.1)) * height * 0.8; b.h += (targetH - b.h) * 0.1; ctx.fillStyle = colors[2]; ctx.fillRect(i * barW, height - b.h, barW - 2, b.h); }); }
+        function renderRipples() { const colors = palettes[state.palette]; ctx.lineWidth=2; if(frameCount% Math.floor(10/state.speedMod) === 0) state.objects.push({x:Math.random()*width,y:Math.random()*height,r:0,alpha:1,color:colors[Math.floor(Math.random()*(colors.length-1))+1]}); for(let i=state.objects.length-1;i>=0;i--){const p=state.objects[i]; p.r+=(2*state.speedMod); p.alpha-=0.01; if(p.alpha<=0)state.objects.splice(i,1); else { ctx.strokeStyle=p.color;ctx.globalAlpha=p.alpha;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.stroke();}} ctx.globalAlpha=1; }
+        function renderDNA() { const colors = palettes[state.palette]; const cx=width/2; state.objects.forEach(p=>{ const t=frameCount*(0.05*state.speedMod)+p.y*0.01; const x1=cx+Math.sin(t)*100; const x2=cx+Math.sin(t+Math.PI)*100; ctx.strokeStyle=colors[2];ctx.globalAlpha=0.2;ctx.beginPath();ctx.moveTo(x1,p.y);ctx.lineTo(x2,p.y);ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle=colors[3];ctx.beginPath();ctx.arc(x1,p.y,4,0,Math.PI*2);ctx.fill();ctx.fillStyle=colors[4];ctx.beginPath();ctx.arc(x2,p.y,4,0,Math.PI*2);ctx.fill(); }); }
         function renderShooting() { const colors = palettes[state.palette]; ctx.strokeStyle=colors[colors.length-1]; ctx.lineWidth=2; state.objects.forEach(s=>{ s.x-=s.s; s.y+=s.s; if(s.x<-100||s.y>height+100){s.x=Math.random()*width+200;s.y=-100;} ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+s.l,s.y-s.l);ctx.stroke(); }); }
-        function renderHex() { const colors = palettes[state.palette]; const size=50; const h=size*Math.sqrt(3); const dx=size*1.5; ctx.lineWidth=1; ctx.strokeStyle=colors[2]; for(let x=0;x<width+size;x+=dx){const col=Math.round(x/dx);const yOff=(col%2)*h/2; for(let y=-size;y<height+size;y+=h){const alpha=(Math.sin(Math.hypot(x-width/2,y+yOff-height/2)*0.01-frameCount*0.05)+1)*0.25; ctx.globalAlpha=Math.max(0.1,alpha); ctx.beginPath(); for(let i=0;i<6;i++){const ang=Math.PI/3*i; const hx=x+size*Math.cos(ang); const hy=(y+yOff)+size*Math.sin(ang); if(i===0)ctx.moveTo(hx,hy); else ctx.lineTo(hx,hy);} ctx.closePath(); ctx.stroke();}} ctx.globalAlpha=1; }
-        function renderStarWarp() { const colors = palettes[state.palette]; ctx.fillStyle=colors[colors.length-1]; const cx=width/2; const cy=height/2; state.objects.forEach(s=>{ s.z-=10; if(s.z<=0){s.z=width;s.x=Math.random()*width;s.y=Math.random()*height;} const sx=(s.x-cx)*(width/s.z)+cx; const sy=(s.y-cy)*(width/s.z)+cy; const sz=(1-s.z/width)*4; ctx.beginPath();ctx.arc(sx,sy,sz,0,Math.PI*2);ctx.fill(); }); }
+        function renderHex() { const colors = palettes[state.palette]; const size=50; const h=size*Math.sqrt(3); const dx=size*1.5; ctx.lineWidth=1; ctx.strokeStyle=colors[2]; for(let x=0;x<width+size;x+=dx){const col=Math.round(x/dx);const yOff=(col%2)*h/2; for(let y=-size;y<height+size;y+=h){const alpha=(Math.sin(Math.hypot(x-width/2,y+yOff-height/2)*0.01-frameCount*(0.05*state.speedMod))+1)*0.25; ctx.globalAlpha=Math.max(0.1,alpha); ctx.beginPath(); for(let i=0;i<6;i++){const ang=Math.PI/3*i; const hx=x+size*Math.cos(ang); const hy=(y+yOff)+size*Math.sin(ang); if(i===0)ctx.moveTo(hx,hy); else ctx.lineTo(hx,hy);} ctx.closePath(); ctx.stroke();}} ctx.globalAlpha=1; }
+        function renderStarWarp() { const colors = palettes[state.palette]; ctx.fillStyle=colors[colors.length-1]; const cx=width/2; const cy=height/2; state.objects.forEach(s=>{ s.z-=(10*state.speedMod); if(s.z<=0){s.z=width;s.x=Math.random()*width;s.y=Math.random()*height;} const sx=(s.x-cx)*(width/s.z)+cx; const sy=(s.y-cy)*(width/s.z)+cy; const sz=(1-s.z/width)*4; ctx.beginPath();ctx.arc(sx,sy,sz,0,Math.PI*2);ctx.fill(); }); }
         function renderNetwork() { const colors=palettes[state.palette]; ctx.lineWidth=0.5; ctx.strokeStyle=colors[2]; state.objects.forEach((p,i)=>{ p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>width)p.vx*=-1; if(p.y<0||p.y>height)p.vy*=-1; ctx.beginPath();ctx.arc(p.x,p.y,2,0,Math.PI*2);ctx.fillStyle=colors[2];ctx.fill(); for(let j=i+1;j<state.objects.length;j++){const p2=state.objects[j];const d=Math.hypot(p.x-p2.x,p.y-p2.y); if(d<150){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p2.x,p2.y);ctx.globalAlpha=1-d/150;ctx.stroke();}} ctx.globalAlpha=1;}); }
-        function renderWaves() { const colors=palettes[state.palette];ctx.lineWidth=2;for(let i=1;i<colors.length;i++){ctx.strokeStyle=colors[i];ctx.beginPath();for(let x=0;x<width;x+=10){const y=height/2+Math.sin(x*0.01+frameCount*0.02+i)*50;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();}}
-        function renderRings() { const colors=palettes[state.palette];ctx.lineWidth=2;for(let i=0;i<15;i++){const r=(frameCount*2+i*80)% (Math.max(width,height)/1.2);const a=1-(r/(Math.max(width,height)/1.2));ctx.strokeStyle=colors[2];ctx.globalAlpha=a;ctx.beginPath();ctx.arc(width/2,height/2,r,0,Math.PI*2);ctx.stroke();}ctx.globalAlpha=1; }
-        function renderGrid() { const colors=palettes[state.palette];const off=(frameCount*2)%60;ctx.strokeStyle=colors[2];ctx.lineWidth=1;const hor=height*0.4;for(let x=-width;x<width*2;x+=60){ctx.beginPath();ctx.moveTo(width/2,hor);ctx.lineTo(x,height);ctx.globalAlpha=0.2;ctx.stroke();}for(let y=hor;y<height;y+=60-(y/height)*20){const dy=y+off*(y/height);if(dy>height)continue;ctx.beginPath();ctx.moveTo(0,dy);ctx.lineTo(width,dy);ctx.stroke();}ctx.globalAlpha=1; }
+        function renderBokeh() { state.objects.forEach(p=>{p.y+=p.vy;if(p.y<-p.r){p.y=height+p.r;p.x=Math.random()*width;}ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.globalAlpha=p.alpha;ctx.fill();});ctx.globalAlpha=1; }
+        function renderWaves() { const colors=palettes[state.palette];ctx.lineWidth=2;for(let i=1;i<colors.length;i++){ctx.strokeStyle=colors[i];ctx.beginPath();for(let x=0;x<width;x+=10){const y=height/2+Math.sin(x*0.01+frameCount*(0.02*state.speedMod)+i)*50;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();}}
+        function renderRings() { const colors=palettes[state.palette];ctx.lineWidth=2;for(let i=0;i<15;i++){const r=(frameCount*(2*state.speedMod)+i*80)% (Math.max(width,height)/1.2);const a=1-(r/(Math.max(width,height)/1.2));ctx.strokeStyle=colors[2];ctx.globalAlpha=a;ctx.beginPath();ctx.arc(width/2,height/2,r,0,Math.PI*2);ctx.stroke();}ctx.globalAlpha=1; }
+        function renderGrid() { const colors=palettes[state.palette];const off=(frameCount*(2*state.speedMod))%60;ctx.strokeStyle=colors[2];ctx.lineWidth=1;const hor=height*0.4;for(let x=-width;x<width*2;x+=60){ctx.beginPath();ctx.moveTo(width/2,hor);ctx.lineTo(x,height);ctx.globalAlpha=0.2;ctx.stroke();}for(let y=hor;y<height;y+=60-(y/height)*20){const dy=y+off*(y/height);if(dy>height)continue;ctx.beginPath();ctx.moveTo(0,dy);ctx.lineTo(width,dy);ctx.stroke();}ctx.globalAlpha=1; }
 
 
         // --- UI INTERACTION ---
         
-        styleSelect.addEventListener('change', (e) => { state.style = e.target.value; initScene(); });
+        styleSelect.addEventListener('change', (e) => { 
+            state.style = e.target.value; 
+            // Reset modifiers saat manual change agar bersih
+            state.densityMod = 1; 
+            state.speedMod = 1; 
+            initScene(); 
+        });
+        
         bgModeSelect.addEventListener('change', (e) => { state.bgMode = e.target.value; });
-        document.getElementById('paletteSelect').addEventListener('change', (e) => { state.palette = e.target.value; initScene(); });
+        paletteSelect.addEventListener('change', (e) => { state.palette = e.target.value; initScene(); });
 
+        // --- CHAOS RANDOMIZER ---
         document.getElementById('btnRefresh').addEventListener('click', () => {
             const randStyle = styles[Math.floor(Math.random() * styles.length)].id;
             const keys = Object.keys(palettes);
             const randPal = keys[Math.floor(Math.random() * keys.length)];
+            const randBg = Math.random() > 0.5 ? 'abstract' : 'solid';
             
+            // Random Chaos Parameters (Tumpukan & Unik)
+            // Density: 0.5x sampai 3.0x (Sangat padat/Tumpukan)
+            const chaosDensity = 0.5 + Math.random() * 2.5; 
+            // Speed: 0.5x sampai 2.0x
+            const chaosSpeed = 0.5 + Math.random() * 1.5;
+
+            // Update State
             state.style = randStyle;
             state.palette = randPal;
+            state.bgMode = randBg;
+            state.densityMod = chaosDensity;
+            state.speedMod = chaosSpeed;
+            
+            // Sync UI
             styleSelect.value = randStyle;
-            document.getElementById('paletteSelect').value = randPal;
+            paletteSelect.value = randPal;
+            bgModeSelect.value = randBg;
+            
             initScene();
         });
 
@@ -525,11 +529,15 @@
             else { btnPause.textContent = "Pause"; btnPause.classList.remove('paused'); animate(); }
         });
 
+        const durationSelect = document.getElementById('durationSelect');
+        const customTimeInput = document.getElementById('customTimeInput');
+        
         durationSelect.addEventListener('change', (e) => {
             if (e.target.value === 'custom') { customTimeInput.style.display = 'block'; customTimeInput.focus(); } 
             else { customTimeInput.style.display = 'none'; }
         });
 
+        // --- RECORDING ---
         const btnRecord = document.getElementById('btnRecord');
         const statusText = document.getElementById('statusText');
         const timerDisplay = document.getElementById('timerDisplay');
