@@ -242,6 +242,7 @@
         
         // --- DATA VISUAL (DIGABUNG) ---
         const styles = [
+            { id: 'infinity', name: '8-Layer Infinity (New)' }, // FITUR BARU
             { id: 'aurora', name: 'Soft Aurora' },
             { id: 'lava', name: 'Lava Lamp' },
             { id: 'ripples', name: 'Rain Ripples' },
@@ -284,8 +285,8 @@
         let isPaused = false;
         
         const state = {
-            style: 'aurora',
-            bgMode: 'solid', // New State
+            style: 'infinity', // Set Default ke Infinity
+            bgMode: 'solid', 
             palette: 'hacker',
             objects: []
         };
@@ -307,31 +308,23 @@
         function resize() {
             const ratioVal = ratioSelect.value;
             const [rW, rH] = ratioVal.split(':').map(Number);
-            
-            // Kita tetapkan base resolusi agar kualitas tinggi
-            // Misalnya sisi terpendek minimal 1080px
             const baseSize = 1080; 
             
             if (rW > rH) {
-                // Landscape / Ultrawide
                 height = baseSize;
                 width = (baseSize * rW) / rH;
             } else {
-                // Portrait / Square
                 width = baseSize;
                 height = (baseSize * rH) / rW;
             }
 
             canvas.width = width;
             canvas.height = height;
-            
-            // Reset Animation on resize
             initScene();
         }
         
-        // Listeners
         ratioSelect.addEventListener('change', resize);
-        window.addEventListener('resize', () => { /* Optional: adjust rendering scale if needed */ });
+        window.addEventListener('resize', () => { });
 
         // --- INITIALIZER ---
         function initScene() {
@@ -339,8 +332,29 @@
             frameCount = 0;
             const colors = palettes[state.palette];
             
-            // Initialization Logic (Combined)
+            // Initialization Logic
             switch (state.style) {
+                // LOGIKA 8 LAYER INFINITY
+                case 'infinity':
+                    // Kita buat 8 Layer. Layer 1 (Jauh) -> Layer 8 (Dekat)
+                    for(let layer=1; layer<=8; layer++) {
+                        // Jumlah partikel per layer (misal 20)
+                        for(let i=0; i<20; i++) {
+                            state.objects.push({
+                                layer: layer, // Penanda layer
+                                x: Math.random() * width,
+                                y: Math.random() * height,
+                                // Ukuran: Layer kecil kecil, layer besar besar
+                                r: (layer * 2) + Math.random() * 5, 
+                                // Kecepatan: Layer 1 lambat, Layer 8 cepat (Parallax)
+                                speed: (layer * 0.5) + Math.random() * 0.5, 
+                                // Warna acak dari palet
+                                color: colors[Math.floor(Math.random() * colors.length)]
+                            });
+                        }
+                    }
+                    break;
+
                 case 'aurora': 
                     for(let i=0; i<6; i++) state.objects.push({ x: Math.random()*width, y: Math.random()*height, vx:(Math.random()-0.5)*0.8, vy:(Math.random()-0.5)*0.8, r:Math.min(width,height)/2.5, color:colors[Math.floor(Math.random()*(colors.length-1))+1] }); break;
                 case 'lava':
@@ -387,38 +401,32 @@
             
             // --- BACKGROUND LOGIC ---
             if (state.bgMode === 'abstract') {
-                // Gradient Radial Dinamis
                 const cx = width/2 + Math.sin(frameCount*0.01) * 100;
                 const cy = height/2 + Math.cos(frameCount*0.01) * 100;
                 const grd = ctx.createRadialGradient(cx, cy, 0, width/2, height/2, width);
-                grd.addColorStop(0, colors[1]); // Lebih terang di tengah
-                grd.addColorStop(1, colors[0]); // Gelap di luar
+                grd.addColorStop(0, colors[1]); 
+                grd.addColorStop(1, colors[0]); 
                 ctx.fillStyle = grd;
             } else {
-                // Solid Color
                 ctx.fillStyle = colors[0];
             }
             
-            // Trail Effect Overlay (Jika Solid mode, atau jika style butuh trail)
             let trail = '00';
             if (['matrix', 'starwarp', 'shooting', 'circuit', 'audio'].includes(state.style)) trail = '33';
             if (state.style === 'ripples') trail = '11';
 
-            // Jika Abstract mode, kita tumpuk semi-transparan hitam untuk efek trail
             if (state.bgMode === 'abstract' && trail !== '00') {
                  ctx.fillStyle = colors[0] + trail; 
             } else if (state.bgMode === 'solid') {
-                 // Reset fillStyle ke solid color + trail
                  ctx.fillStyle = colors[0] + (trail !== '00' ? trail : '');
             }
             
-            // Draw BG Rect
             ctx.fillRect(0, 0, width, height);
 
             frameCount++;
             
-            // Dispatch Render
             switch (state.style) {
+                case 'infinity': renderInfinity(); break; // RENDERER BARU
                 case 'aurora': renderAurora(); break;
                 case 'lava': renderLava(); break;
                 case 'nebula': renderNebula(); break;
@@ -440,6 +448,41 @@
         }
 
         // --- RENDERERS ---
+
+        // FUNGSI RENDER INFINITY (PARALLAX + RECYCLING)
+        function renderInfinity() {
+            state.objects.forEach(obj => {
+                // Gerakkan ke kiri berdasarkan kecepatan layer
+                obj.x -= obj.speed;
+
+                // LOGIKA INFINITY: Jika keluar layar kiri
+                if (obj.x < -50) {
+                    // Pindahkan ke kanan layar (Recycle)
+                    obj.x = width + 50;
+                    // Acak posisi Y baru (Full Auto)
+                    obj.y = Math.random() * height;
+                    // Acak warna baru dari palet (Full Auto)
+                    const colors = palettes[state.palette];
+                    obj.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+
+                // Gambar
+                ctx.fillStyle = obj.color;
+                // Layer jauh (1) lebih transparan, Layer dekat (8) lebih solid
+                ctx.globalAlpha = 0.2 + (obj.layer / 10); 
+                
+                // Variasi bentuk: Lingkaran & Kotak
+                if (obj.layer % 2 === 0) {
+                    ctx.beginPath();
+                    ctx.arc(obj.x, obj.y, obj.r, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(obj.x, obj.y, obj.r, obj.r);
+                }
+            });
+            ctx.globalAlpha = 1; // Reset alpha
+        }
+
         function renderAurora() { state.objects.forEach(b => { b.x+=b.vx; b.y+=b.vy; if(b.x<-b.r||b.x>width+b.r)b.vx*=-1; if(b.y<-b.r||b.y>height+b.r)b.vy*=-1; ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fillStyle=b.color;ctx.fill(); }); }
         function renderLava() { state.objects.forEach(b => { b.y -= b.s; if(b.y < -b.r) { b.y = height + b.r; b.x = Math.random()*width; } let xOff = Math.sin(frameCount * 0.02 + b.y * 0.01) * 20; ctx.beginPath(); ctx.arc(b.x + xOff, b.y, b.r, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.fill(); }); }
         function renderNebula() { state.objects.forEach(b => { b.x+=b.vx; b.y+=b.vy; if(b.x<0||b.x>width)b.vx*=-1; if(b.y<0||b.y>height)b.vy*=-1; ctx.beginPath(); ctx.arc(b.x, b.y, b.r*20, 0, Math.PI*2); ctx.fillStyle = b.color; ctx.globalAlpha = 0.05; ctx.fill(); ctx.globalAlpha = 1; }); }
